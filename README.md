@@ -23,7 +23,9 @@ pip install -r requirements.txt
 ```
 
 
-**Important Note:** Your Django project relies on environment variables for secure operation. You'll need to create a `.env` file in your project's root directory to configure these variables.
+**Important Note:** 
+
+Your Django project relies on environment variables for secure operation. You'll need to create a `.env` file in your project's root directory to configure these variables.
 
 **1. Create a `.env` File:**
 
