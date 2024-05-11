@@ -33,6 +33,14 @@ Using a text editor, create a new file named `.env` in the root directory of you
 
 **2. copy `.env.example` to `.env` then fill variables with your specific values:**
 
+**make migrations** 
+```bash
+py manage.py makemigrations
+```
+**then migrate**
+```bash
+py manage.py migrate
+```
 **launch the development server** 
 ```bash
 py manage.py runserver
