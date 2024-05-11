@@ -1,7 +1,10 @@
 # EventEase : Simplify Event Planning with Streamlined Booking
 EventEase empowers events creation process by granting you access to a comprehensive suite of booking services, eliminating the need to juggle multiple vendors. From finding the perfect venue and caterer to securing a DJ and other amenities, EventEase streamlines the entire event planning process, saving you time and effort.
 ## How to integerate with the APIs?
-To integrate with the EventEase API, you'll need Python installed on your system. You can typically find installation instructions on the official Python website: https://www.python.org/downloads/
+
+To integrate with the EventEase API, you'll need to install postgreSQL using their official website : https://www.postgresql.org/download/
+
+install Python on your system. You can typically find installation instructions on the official Python website: https://www.python.org/downloads/
 Once you have Python set up, proceed with creating virtual environment.
 
 create a virtual environment on windows using:
