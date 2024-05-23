@@ -8,7 +8,7 @@ from django.utils.translation import gettext as _
 from django.contrib.auth import REDIRECT_FIELD_NAME
 from rest_framework.authtoken.models import Token
 
-from .models import User
+from .models import User, OTP
 from .forms import CustomAuthForm
 class CustomAdminSite(AdminSite):
     login_form = CustomAuthForm
@@ -61,3 +61,4 @@ class CustomAdminSite(AdminSite):
 admin.site = CustomAdminSite()
 admin.site.register(User)
 admin.site.register(Token)
+admin.site.register(OTP)

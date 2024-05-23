@@ -1,6 +1,8 @@
 from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
+from .models import OTP, User
+
 
 class TokenSerializer(serializers.Serializer):
     email = serializers.EmailField(
@@ -37,3 +39,65 @@ class TokenSerializer(serializers.Serializer):
 
         attrs['user'] = user
         return attrs
+
+
+class RegisterSerializer(serializers.ModelSerializer):
+    password2 = serializers.CharField(style = {'input_type' : 'password'}, write_only = True,max_length=128)
+    class Meta:
+        model = User
+        fields = ['id','first_name', 'last_name', 'email', 'phone', 'password', 'password2']
+        extra_kwargs = {'password': {'write_only': True}}
+    def create(self, validated_data):
+        if validated_data['password'] != validated_data['password2']:
+            raise serializers.ValidationError({'error' : 'the first password doesn\'t match the second one'})
+        
+        if User.objects.filter(email = validated_data['email']).exists():
+            raise serializers.ValidationError({'error' : 'Email already exists'})
+        
+        user = User.objects.create_user(
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+            email=validated_data['email'],
+            phone=validated_data['phone'],
+            password=validated_data['password']
+        )
+        return user
+
+class AdminUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id','first_name', 'last_name', 'email', 'phone', 'password', 'is_active', 'is_service_provider', 'is_superuser', 'last_login', 'date_joined']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    
+class OTPSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OTP
+        fields = ['id','code','user','service','expire_date', 'is_verified']
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'user': {'read_only': True},
+            'service': {'read_only': True},
+            'expire_date': {'read_only': True},
+            'is_verified': {'read_only': True},
+        }
+
+class ChangePasswordRequestedSerialzer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['email']
+    def validate_email(self, value):
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email not found")
+        return value
+    
+class UpdatePasswordSerializer(serializers.ModelSerializer):
+    password2 = serializers.CharField(style = {'input_type' : 'password'}, write_only = True,max_length=128)
+    class Meta:
+        model = User
+        fields = ['email', 'password', 'password2']
+
+    def update(self, validated_data):
+        if validated_data['password'] != validated_data['password2']:
+            raise serializers.ValidationError({'error' : 'the first password doesn\'t match the second one'})
+        

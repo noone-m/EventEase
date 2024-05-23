@@ -4,6 +4,9 @@ from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password
 from django.contrib import auth
+from datetime import timedelta
+from rest_framework.authtoken.models import Token
+from services.models import Service
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
@@ -95,3 +98,34 @@ class User(AbstractBaseUser, PermissionsMixin):
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name","last_name","phone","password"]
+
+
+class OTP(models.Model):
+    user =models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null = True,
+    )
+    service =models.ForeignKey(
+        Service,
+        on_delete=models.CASCADE,
+        null = True,
+    )
+    code = models.CharField(max_length = 6, null = False)
+    expire_date = models.DateTimeField()
+    is_verified = models.BooleanField(default =False)
+
+    def save(self, *args, **kwargs):
+        self.expire_date = timezone.now() + timedelta(seconds = 30)
+        super().save(*args, **kwargs)
+    
+
+    def is_expired(self):
+        return timezone.now() > self.expire_date
+        
+    def __str__(self):
+        return f'{self.user.email} - {self.code}'
+    
+class PasswordChangeRequested(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE,null = True)
+    is_requested = models.BooleanField(default = False)

@@ -48,6 +48,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'accounts',
+    'events',
+    'locations',
+    'notifications',
+    'photos',
+    'reviews',
+    'services',
 ]
 
 MIDDLEWARE = [
@@ -144,9 +150,10 @@ REST_FRAMEWORK = {
         # 'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
-    # 'DEFAULT_PERMISSOIN_CLASSES' : [
-    #     'rest_framework.permissions.IsAuthenticated',
-    # ],
+    'DEFAULT_PERMISSION_CLASSES' : [
+        'rest_framework.permissions.IsAuthenticated',
+        'accounts.permissions.IsPhoneVerified',
+    ],
     # 'DEFAULT_PAGINATION_CLASS' : 'rest_framework.pagination.PageNumberPagination',
     # 'PAGE_SIZE' : 2,
 
@@ -157,3 +164,8 @@ REST_FRAMEWORK = {
     #     'django_filters.rest_framework.DjangoFilterBackend', 
     # ), 
 }
+
+# twilio configuration
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID ')
+TWILIO_AUTH_TOKEN  = os.environ.get('TWILIO_AUTH_TOKEN ')
+TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER ')
