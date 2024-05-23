@@ -24,7 +24,19 @@ git clone https://github.com/noone-m/EventEase.git
 ```bash
 pip install -r requirements.txt
 ```
+**Create a new database:**
+```bash
+createdb exampledb
+```
 
+**Import the schema:**
+```bash
+psql -U yourusername -d exampledb -f schema.sql
+```
+**Import the data:**
+```bash
+psql -U yourusername -d exampledb -f data.sql
+```
 
 **Important Note:** 
 
@@ -34,16 +46,8 @@ Your Django project relies on environment variables for secure operation. You'll
 
 Using a text editor, create a new file named `.env` in the root directory of your project. This file should **not** be added to version control (e.g., Git).
 
-**2. copy `.env.example` to `.env` then fill variables with your specific values:**
+**2. copy `.env.example` to `.env` then fill variables with your specific values.**
 
-**make migrations** 
-```bash
-py manage.py makemigrations
-```
-**then migrate**
-```bash
-py manage.py migrate
-```
 **launch the development server** 
 ```bash
 py manage.py runserver
