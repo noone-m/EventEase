@@ -1,8 +1,8 @@
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
-from .models import OTP, User
-
+from .models import OTP, User, PasswordChangeRequested
 
 class TokenSerializer(serializers.Serializer):
     email = serializers.EmailField(
@@ -82,22 +82,43 @@ class OTPSerializer(serializers.ModelSerializer):
             'is_verified': {'read_only': True},
         }
 
-class ChangePasswordRequestedSerialzer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['email']
+class ChangePasswordRequestedSerialzer(serializers.Serializer):
+    """
+    Serializer class for handling change password requests.
+
+    This serializer validates the request by checking if the provided email address
+    exists in the User model. It raises a validation error if the email is not found.
+    """
+
+    email = serializers.EmailField()
     def validate_email(self, value):
         if not User.objects.filter(email=value).exists():
             raise serializers.ValidationError("Email not found")
         return value
-    
+
+
+class ChangePasswordRequestsSerializer(serializers.ModelSerializer):
+    """
+    Serializer class to handle list passwords requests
+    """
+    class Meta:
+        model = PasswordChangeRequested
+        fields = '__all__'
+
 class UpdatePasswordSerializer(serializers.ModelSerializer):
     password2 = serializers.CharField(style = {'input_type' : 'password'}, write_only = True,max_length=128)
+    _email = serializers.EmailField()
     class Meta:
         model = User
-        fields = ['email', 'password', 'password2']
+        fields = ['_email', 'password', 'password2']
 
-    def update(self, validated_data):
-        if validated_data['password'] != validated_data['password2']:
-            raise serializers.ValidationError({'error' : 'the first password doesn\'t match the second one'})
-        
+    def validate(self, data):
+        if data['password'] != data['password2']:
+            raise serializers.ValidationError("Passwords do not match.")
+        return data
+    
+    def update(self, user, validated_data):
+        user.password = make_password(validated_data['password'])
+        user.save()
+        return user
+

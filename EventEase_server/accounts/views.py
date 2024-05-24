@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.authtoken.models import Token
 from .serializers import(TokenSerializer,RegisterSerializer,OTPSerializer,AdminUserSerializer,
-ChangePasswordRequestedSerialzer, UpdatePasswordSerializer)
+ChangePasswordRequestedSerialzer, ChangePasswordRequestsSerializer, UpdatePasswordSerializer)
 from .models import OTP,User,PasswordChangeRequested
 from .permissions import IsOwner,IsAdminUser,IsPhoneVerified
 from . import utils
@@ -115,22 +115,24 @@ class DestroyOTP(APIView):
         otp.delete()
         return Response({'message' : 'deleted successfully'}, status= status.HTTP_204_NO_CONTENT)
     
-
+# throttle here
 class ChangePasswordRequested(APIView):
     serializer_class = ChangePasswordRequestedSerialzer
     permission_classes = [AllowAny]
     def post(self,request):
         serializer = ChangePasswordRequestedSerialzer(data = request.data)
         if serializer.is_valid():
-            user = get_user_model().objects.filter(email=serializer.validated_data['email'])
+            user = get_user_model().objects.filter(email=serializer.validated_data['email']).first()
             change_password_request,created = PasswordChangeRequested.objects.get_or_create(user = user)
-            change_password_request.status = True
+            change_password_request.is_requested = True
+            change_password_request.save()
             # make the user number not verified for securtiy
             otp = OTP.objects.get(user = user)
             otp.is_verified = False
-
-            return Response({'message' : 'email found'},status=status.HTTP_100_CONTINUE)
+            otp.save()
+            return Response({'message' : 'email found'},status=status.HTTP_200_OK)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
 
 class UpdatePassword(APIView):
     serializer_class = UpdatePasswordSerializer
@@ -138,7 +140,7 @@ class UpdatePassword(APIView):
     def post(self,request):
         serializer = UpdatePasswordSerializer(data = request.data)
         if serializer.is_valid():
-            user = get_user_model().objects.filter(email=serializer.validated_data['email'])
+            user = get_user_model().objects.filter(email=serializer.validated_data['_email']).first()
             print(user) # the output of case no user found is : <QuerySet []>
             if not user:
                 return Response({'message':'there is no user with the provided email'},status=status.HTTP_404_NOT_FOUND)
@@ -155,7 +157,11 @@ class UpdatePassword(APIView):
                 return Response({'message':'you should verify your number'},status = 452)
             if not otp.is_verified:
                 return Response({'message':'you should verify your number'},status = 452)
-            serializer.update()
+            # Update the user's password
+            serializer.update(user, serializer.validated_data)
+            # return request status to False
+            change_password_requested.is_requested = False
+            change_password_requested.save()
             return Response({'message':'changed successfully'},status=status.HTTP_200_OK)
         
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
@@ -172,3 +178,7 @@ class UserViewSet(ModelViewSet):
         else:
             pass
         return super().get_permissions()
+
+class ChangePassowrdRequests(ListAPIView):
+    queryset = PasswordChangeRequested.objects.all()
+    serializer_class = ChangePasswordRequestsSerializer

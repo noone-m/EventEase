@@ -1,6 +1,6 @@
 from django.urls import path,include
 from .views import (Login,log_out,Register,UserViewSet,VerifyOTP,GenerateOTP,ListOTP,DestroyOTP,
-ChangePasswordRequested,UpdatePassword)
+ChangePasswordRequested, ChangePassowrdRequests, UpdatePassword)
 from rest_framework.routers import DefaultRouter
 
 
@@ -16,6 +16,7 @@ urlpatterns = [
     path('otps', ListOTP.as_view()),
     path('destroy-code/<int:id>', DestroyOTP.as_view()),
     path('change-password-request/', ChangePasswordRequested.as_view()),
+    path('change-password-requests', ChangePassowrdRequests.as_view()),
     path('update-password/', UpdatePassword.as_view()),
     path('',include(router.urls)),
 ] 
