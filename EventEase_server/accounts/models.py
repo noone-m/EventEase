@@ -125,7 +125,8 @@ class OTP(models.Model):
         
     def __str__(self):
         return f'{self.user.email} - {self.code}'
-    
+   
+        
 class PasswordChangeRequested(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE,null = True)
     is_requested = models.BooleanField(default = False)

@@ -54,3 +54,7 @@ def send_message(method,sender_number,recipient_number,msg):
     if method == 'pywhatkit':
         pass
         #pywhatkit.sendwhatmsg_instantly(recipient_number,msg)
+    
+
+def send_email(email):
+    pass

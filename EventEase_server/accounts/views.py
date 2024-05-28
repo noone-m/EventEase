@@ -11,13 +11,14 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.authtoken.models import Token
+from services.models import FoodService
 from .serializers import(TokenSerializer,RegisterSerializer,OTPSerializer,AdminUserSerializer,
 ChangePasswordRequestedSerialzer, ChangePasswordRequestsSerializer, UpdatePasswordSerializer)
 from .models import OTP,User,PasswordChangeRequested
 from .permissions import IsOwner,IsAdminUser,IsPhoneVerified
 from . import utils
 
-
+# throttle here for brute force
 class Login(ObtainAuthToken):
     permission_classes = [AllowAny]
     serializer_class = TokenSerializer
@@ -81,7 +82,7 @@ class GenerateOTP(APIView):
             otp.save()
             return Response({'message' : 'the code has been sent successfully'},status=status.HTTP_201_CREATED)
 
-
+# throttle here for brute force
 class VerifyOTP(APIView):
     permission_classes = [IsAuthenticated,]
     serializer_class = OTPSerializer
@@ -166,6 +167,12 @@ class UpdatePassword(APIView):
         
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
+
+class ChangePassowrdRequests(ListAPIView):
+    queryset = PasswordChangeRequested.objects.all()
+    serializer_class = ChangePasswordRequestsSerializer
+
+
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     serializer_class = AdminUserSerializer
@@ -178,7 +185,3 @@ class UserViewSet(ModelViewSet):
         else:
             pass
         return super().get_permissions()
-
-class ChangePassowrdRequests(ListAPIView):
-    queryset = PasswordChangeRequested.objects.all()
-    serializer_class = ChangePasswordRequestsSerializer

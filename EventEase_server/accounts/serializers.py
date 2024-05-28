@@ -69,7 +69,6 @@ class AdminUserSerializer(serializers.ModelSerializer):
         fields = ['id','first_name', 'last_name', 'email', 'phone', 'password', 'is_active', 'is_service_provider', 'is_superuser', 'last_login', 'date_joined']
         extra_kwargs = {'password': {'write_only': True}}
 
-    
 class OTPSerializer(serializers.ModelSerializer):
     class Meta:
         model = OTP
