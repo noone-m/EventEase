@@ -1,4 +1,6 @@
-from .models import FoodService
+from locations.models import Address, Location
+from locations.serializers import LocationSerializer,AddressSerializer
+from .models import FoodService,ServiceType,ServiceProviderApplication,FavoriteService,Service
 from rest_framework import serializers
 
 class FoodServiceSerializer(serializers.ModelSerializer):
@@ -6,3 +8,43 @@ class FoodServiceSerializer(serializers.ModelSerializer):
         model = FoodService
         fields = '__all__'
     
+
+class ServiceTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceType
+        fields = '__all__'
+
+class ServiceProviderApplicationSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ServiceProviderApplication
+        fields = '__all__'
+        read_only_fields = ['id','user','location']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        if request and not request.user.is_superuser:
+            self.fields['status'].read_only = True  # Make status read-only for non-superusers
+        if request and request.method == 'GET':
+            print('true')
+            self.fields['service_type'] = ServiceTypeSerializer(read_only = True)
+            self.fields['location'] = LocationSerializer(read_only =True)
+    
+    def validate(self, attrs):
+        print(attrs)
+        print('hiiiii')
+        if ('service_type' in attrs and 'other_type' in attrs) or ('service_type' not in attrs and 'other_type' not in attrs):
+            raise serializers.ValidationError("Request body should contain either 'service_type' or 'other_type', not both.")
+        return super().validate(attrs)
+
+class FavoriteServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FavoriteService
+        fields = '__all__'
+    
+
+class ServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Service
+        fields = '__all__'

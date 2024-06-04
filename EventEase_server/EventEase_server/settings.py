@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'photos',
     'reviews',
     'services',
+    'videos',
 ]
 
 MIDDLEWARE = [

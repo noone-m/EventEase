@@ -1,6 +1,7 @@
 from django.urls import path,include
 from .views import (Login,log_out,Register,UserViewSet,VerifyOTP,GenerateOTP,ListOTP,DestroyOTP,
 ChangePasswordRequested, ChangePassowrdRequests, UpdatePassword)
+from services.views import GetUserFavoriteServices
 from rest_framework.routers import DefaultRouter
 
 
@@ -18,5 +19,6 @@ urlpatterns = [
     path('change-password-request/', ChangePasswordRequested.as_view()),
     path('change-password-requests', ChangePassowrdRequests.as_view()),
     path('update-password/', UpdatePassword.as_view()),
+    path('users/<int:pk>/favorite-services', GetUserFavoriteServices.as_view()),
     path('',include(router.urls)),
 ] 
