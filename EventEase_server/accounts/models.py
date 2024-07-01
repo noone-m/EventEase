@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password
 from django.contrib import auth
+from django.utils.timezone import now
 from datetime import timedelta
 from rest_framework.authtoken.models import Token
 from services.models import Service
@@ -116,10 +117,9 @@ class OTP(models.Model):
     is_verified = models.BooleanField(default =False)
 
     def save(self, *args, **kwargs):
-        self.expire_date = timezone.now() + timedelta(seconds = 30)
+        self.expire_date = timezone.now() + timedelta(seconds = 60)
         super().save(*args, **kwargs)
     
-
     def is_expired(self):
         return timezone.now() > self.expire_date
         
@@ -130,3 +130,21 @@ class OTP(models.Model):
 class PasswordChangeRequested(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE,null = True)
     is_requested = models.BooleanField(default = False)
+
+
+class EmailVerified(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)  # Ensures each user has one unique email verification record
+    is_verified = models.BooleanField(default=False)  # Field to store verification status
+    verification_date = models.DateTimeField(auto_now_add = True,null=True)  # Optional field to store the date of verification
+    verfication_token = models.CharField(max_length=100, unique=True)  # Unique code for verification
+    expire_date = models.DateTimeField(now)
+    
+    def save(self, *args, **kwargs):
+        self.expire_date = timezone.now() + timedelta(seconds = 30)
+        super().save(*args, **kwargs)
+
+    def is_expired(self):
+        return timezone.now() > self.expire_date
+    
+    def __str__(self):
+        return f"{self.user.username} - Verified: {self.is_verified}"

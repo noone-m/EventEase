@@ -1,5 +1,5 @@
 from rest_framework.permissions import BasePermission,SAFE_METHODS
-from  .models import OTP
+from  .models import OTP,EmailVerified
 class IsOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
         return request.user == obj.user
@@ -24,4 +24,17 @@ class IsPhoneVerified(BasePermission):
         except OTP.DoesNotExist:
             return False
         
-        return otp.is_verified   
+        return otp.is_verified
+
+
+class IsEmailVerified(BasePermission):
+    """
+    Allows access  to users who verified thier numbers.
+    """
+
+    def has_permission(self, request, view):
+        try:
+            emailVerified = EmailVerified.objects.get(user = request.user)
+        except EmailVerified.DoesNotExist:
+            return False
+        return EmailVerified.is_verified      

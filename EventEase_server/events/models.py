@@ -27,3 +27,7 @@ class Reservation(models.Model):
     cost = models.DecimalField(max_digits=10, decimal_places=2)
 
 
+class InvitationCard(models.Model):
+    event = models.ForeignKey(Event,on_delete=models.CASCADE)
+    invitation = models.TextField()
+    

@@ -14,6 +14,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 
+
 # load .env variables
 load_dotenv()
 
@@ -33,7 +34,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+
 
 
 # Application definition
@@ -55,11 +56,15 @@ INSTALLED_APPS = [
     'reviews',
     'services',
     'videos',
+    'reports',
+    'wallet',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -154,6 +159,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES' : [
         'rest_framework.permissions.IsAuthenticated',
         'accounts.permissions.IsPhoneVerified',
+        'accounts.permissions.IsEmailVerified'
     ],
     # 'DEFAULT_PAGINATION_CLASS' : 'rest_framework.pagination.PageNumberPagination',
     # 'PAGE_SIZE' : 2,
@@ -170,3 +176,8 @@ REST_FRAMEWORK = {
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID ')
 TWILIO_AUTH_TOKEN  = os.environ.get('TWILIO_AUTH_TOKEN ')
 TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER ')
+
+
+MEDIA_ROOT = BASE_DIR / 'storage'
+
+CORS_ALLOW_ALL_ORIGINS = True

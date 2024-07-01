@@ -9,15 +9,13 @@ from accounts.permissions import IsAdminUser,IsOwner
 from locations.models import Address, Location
 from locations.serializers import AddressSerializer,LocationSerializer
 from .models import ServiceType,Service,FoodService,ServiceProviderApplication,FavoriteService
-from .serializers import FoodServiceSerializer,ServiceTypeSerializer,ServiceProviderApplicationSerializer,FavoriteServiceSerializer,ServiceSerializer
+from .serializers import FoodServiceSerializer,ServiceTypeSerializer,ServiceProviderApplicationSerializer,FavoriteServiceSerializer,ServiceSerializer,DJServiceSerializer
 
 
 class ServiceTypeViewSet(ModelViewSet):
     queryset = ServiceType.objects.all()
     serializer_class = ServiceTypeSerializer
     permission_classes = [IsAdminUser]
-
-
 
 
 class FoodServiceViewSet(ModelViewSet):
@@ -118,40 +116,70 @@ class ApproveApplication(APIView):
                 location = application.location
             )
             service.save()
+            
+        # if application.service_type.type == 'venue': 
+        #     service,created = FoodService.objects.get_or_create(
+        #         service_provider = user,
+        #         name = application.name,
+        #         service_type = application.service_type,
+        #         phone = application.phone,
+        #         location = application.location
+        #     )
+        #     service.save()
             return Response({'message':'approved'},status= status.HTTP_200_OK)
         return Response(status=status.HTTP_400_BAD_REQUEST)
     
-
+#Implement this in a function
 class DeclineApplication(APIView):
-    pass
-
-# is owner permission
-class FavoriteServiceView(APIView):
-    def post(self,resquset,**kwargs):
+    permission_classes = [IsAdminUser]
+    def post(self,request,**kwargs):
         pk = kwargs.get('pk')
-        service = Service.objects.get(id = pk)
-        user = resquset.user
-        favorite_service,created = FavoriteService.objects.get_or_create(user = user,service = service)
-        return Response({'message':'added successfully'},status= status.HTTP_200_OK)
-    
-    def get(self,resquset,**kwargs):
-        pk = kwargs.get('pk')
-        service = Service.objects.get(id = pk)
-        user = resquset.user
-        favorite_service = FavoriteService.objects.get(user = user,service = service)
+        application = ServiceProviderApplication.objects.get(id=pk)
+        application.status = 'Rejected'
+        application.save()
 
-class GetUserFavoriteServices(APIView):
+
+class UserFavoriteServices(APIView):
     def get(self,requset,**kwargs):
-        pk = kwargs.get('pk')
         user = requset.user
         favorite_services = FavoriteService.objects.filter(user = user)
         print(favorite_services)
         serialzer = FavoriteServiceSerializer(favorite_services,many = True)
         return Response(serialzer.data,status=status.HTTP_200_OK)
+    
+    def post(self,requset,**kwargs):
+        user = requset.user
+        serialzer = FavoriteServiceSerializer(data = requset.data)
+        if serialzer.is_valid():
+            serialzer.save(user = user)
+            return Response(serialzer.data,status=status.HTTP_201_CREATED)
+        return Response(serialzer.errors)
 
 class ServiceViewSet(ModelViewSet):
     queryset = Service.objects.all()
     serializer_class = ServiceSerializer
+
+    def retrieve(self, request, pk=None):
+        # Get the service object
+        #   service = self.get_object()
+
+        # Do something with the service object before returning it (e.g., modify data)
+        # ...
+
+        # Return the serialized service data
+        # serializer = self.get_serializer(service)
+        if pk == None : 
+            return Response(self.queryset)
+        else:
+            service = Service.objects.get(id = pk)
+            if service.service_type.type == 'food':
+                serializer = FoodServiceSerializer
+            if service.service_type.type == 'DJ':
+                serializer = DJServiceSerializer
+            serializer = serializer(service)
+            return Response(serializer.data)
+
+
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy']:
             self.permission_classes = [IsAdminUser|IsOwner]
@@ -160,4 +188,4 @@ class ServiceViewSet(ModelViewSet):
         else:
             pass
         return super().get_permissions()
-    
+

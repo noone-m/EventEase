@@ -1,6 +1,7 @@
 from locations.models import Address, Location
 from locations.serializers import LocationSerializer,AddressSerializer
-from .models import FoodService,ServiceType,ServiceProviderApplication,FavoriteService,Service
+from photos.serializers import ServicePhotosSerializers
+from .models import FoodService,ServiceType,ServiceProviderApplication,FavoriteService,Service,DJService
 from rest_framework import serializers
 
 class FoodServiceSerializer(serializers.ModelSerializer):
@@ -33,7 +34,6 @@ class ServiceProviderApplicationSerializer(serializers.ModelSerializer):
     
     def validate(self, attrs):
         print(attrs)
-        print('hiiiii')
         if ('service_type' in attrs and 'other_type' in attrs) or ('service_type' not in attrs and 'other_type' not in attrs):
             raise serializers.ValidationError("Request body should contain either 'service_type' or 'other_type', not both.")
         return super().validate(attrs)
@@ -42,9 +42,16 @@ class FavoriteServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = FavoriteService
         fields = '__all__'
-    
+        read_only_fields = ['id','user']
 
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
         fields = '__all__'
+
+
+class DJServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DJService
+        fields = '__all__'
+    

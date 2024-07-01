@@ -1,7 +1,17 @@
 from random import randint
 from django.conf import settings
+from django.core.mail import send_mail
 from twilio.rest import Client
-# import pywhatkit
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from dotenv import load_dotenv
+import secrets
+import smtplib
+import os
+
+
+load_dotenv()
+
 
 def random_code():
     """
@@ -56,5 +66,45 @@ def send_message(method,sender_number,recipient_number,msg):
         #pywhatkit.sendwhatmsg_instantly(recipient_number,msg)
     
 
-def send_email(email):
-    pass
+
+# Configuration
+smtp_server = "smtp.gmail.com"  # For Gmail. Use "smtp-mail.outlook.com" for Outlook.
+port = 587  # For TLS
+sender_email = os.environ.get('EMAIL_HOST_USER')  # Replace with your email
+app_password = os.environ.get('EMAIL_HOST_PASSWORD')  # Replace with your app password
+
+
+
+def send_mail(receiver_email,subject,body):
+    message = MIMEMultipart()
+    message["From"] = sender_email
+    message["To"] = receiver_email
+    message["Subject"] = subject
+    message.attach(MIMEText(body, "plain"))
+
+    try:
+        # Connect to the server
+        server = smtplib.SMTP(smtp_server, port)
+        server.starttls()  # Secure the connection
+
+        # Log in to your account
+        server.login(sender_email, app_password)
+
+        server.sendmail(sender_email, receiver_email, message.as_string())
+        print("Email sent successfully!")
+
+    except Exception as e:
+        print(f"Error: {e}")
+
+    finally:
+        server.quit()
+
+def generate_verification_token():
+    verification_token = secrets.token_urlsafe(64)
+    return verification_token
+
+
+def send_verifcation_link(receiver_email,verification_token):
+    subject = 'verify your email please'
+    verification_link = f"To verify your Email on EventEase Please press on the provided link https://127.0.0.1/verify-email?token={verification_token}"
+    send_mail(receiver_email,subject,verification_link)

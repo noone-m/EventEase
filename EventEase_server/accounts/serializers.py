@@ -2,7 +2,7 @@ from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
-from .models import OTP, User, PasswordChangeRequested
+from .models import OTP, User, PasswordChangeRequested,EmailVerified
 
 class TokenSerializer(serializers.Serializer):
     email = serializers.EmailField(
@@ -121,3 +121,15 @@ class UpdatePasswordSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+
+class EmailVerifiedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmailVerified
+        fields = ['id','verfication_token','user','verification_date','expire_date', 'is_verified']
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'user': {'read_only': True},
+            'expire_date': {'read_only': True},
+            'is_verified': {'read_only': True},
+            'verification_date': {'read_only': True},
+        }

@@ -13,8 +13,9 @@ from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.authtoken.models import Token
 from services.models import FoodService
 from .serializers import(TokenSerializer,RegisterSerializer,OTPSerializer,AdminUserSerializer,
-ChangePasswordRequestedSerialzer, ChangePasswordRequestsSerializer, UpdatePasswordSerializer)
-from .models import OTP,User,PasswordChangeRequested
+ChangePasswordRequestedSerialzer, ChangePasswordRequestsSerializer, UpdatePasswordSerializer,
+EmailVerifiedSerializer)
+from .models import OTP,User,PasswordChangeRequested,EmailVerified
 from .permissions import IsOwner,IsAdminUser,IsPhoneVerified
 from . import utils
 
@@ -105,7 +106,7 @@ class VerifyOTP(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class ListOTP(ListAPIView):
-    # permission_classes = [IsAdminUser,]
+    permission_classes = [IsAdminUser,]
     serializer_class = OTPSerializer
     queryset = OTP.objects.all()
 
@@ -185,3 +186,44 @@ class UserViewSet(ModelViewSet):
         else:
             pass
         return super().get_permissions()
+
+
+# verifying email via link
+ # i think throttle here is important 
+class GenerateVerificationLink(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self,request):
+            verification_token = utils.generate_verification_token()
+            email_verified ,created= EmailVerified.objects.get_or_create(user = request.user)
+            print(verification_token)
+            if email_verified.is_verified == True:
+                return Response({'message' : 'your email is already verified'},status=status.HTTP_400_BAD_REQUEST)
+            # utils.send_verifcation_link('reciever@gmail.com',verification_token)
+            email_verified.verfication_token = verification_token
+            email_verified.save()
+            return Response({'message' : 'the verfication link has been sent successfully'},status=status.HTTP_201_CREATED)
+
+# throttle here for brute force
+class VerifyEmail(APIView):
+    permission_classes = [IsAuthenticated,]
+    def get(self,request):
+        verification_token = request.query_params.get('token')
+        try :
+            email_verified = EmailVerified.objects.get(user = request.user)
+        except EmailVerified.DoesNotExist:
+            return Response({'message' : 'you need to generate email verfication token first'},status=status.HTTP_400_BAD_REQUEST)
+        if email_verified.is_expired():
+            return Response({'message' : 'verfication link has expired'},status=status.HTTP_400_BAD_REQUEST)
+        if verification_token != email_verified.verfication_token:
+            return Response({'message' : 'verfication token is wrong'}, status=status.HTTP_400_BAD_REQUEST)
+        if email_verified.is_verified == True :
+            return Response({'message' : 'already verified'},status=status.HTTP_400_BAD_REQUEST)
+        email_verified.is_verified = True
+        email_verified.save()
+        return Response({'message' : 'Verification Completed'},status=status.HTTP_200_OK)
+
+
+class ListEmailVerified(ListAPIView):
+    permission_classes = [IsAdminUser,]
+    serializer_class = EmailVerifiedSerializer
+    queryset = EmailVerified.objects.all()

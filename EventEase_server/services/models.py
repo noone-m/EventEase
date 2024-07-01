@@ -27,6 +27,7 @@ class Service(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(null = True)
     service_type = models.ForeignKey(ServiceType,on_delete = models.CASCADE)
+    # in future phone should be unique
     phone = models.CharField(max_length = 15,null = False)
     location = models.ForeignKey(Location, on_delete=models.CASCADE, null = True)
     created_at = models.DateTimeField(auto_now_add = True, null = True)
@@ -75,11 +76,33 @@ class Venue(Service):
     amenities = models.TextField() # like wifi,parking,audio-visual devices
     minimum_guests = models.IntegerField()
     maximum_guests = models.IntegerField()
+    
+
+class PhotoGrapherService(Service):
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2) 
+    area_limit_km = models.IntegerField()
 
 
-class Decoration(Service):
-    pass
+class DecorationService(Service):
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2) 
+    area_limit_km = models.IntegerField()
 
+class EntertainementService(Service):
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2) 
+    area_limit_km = models.IntegerField()
+
+
+class Decore(models.Model):
+    decore_service = models.ForeignKey(DecorationService,on_delete=models.CASCADE)
+    name = models.CharField(max_length = 255)
+    quantity  = models.IntegerField()
+    avialable_quantity  = models.IntegerField()
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2) 
+    photo = models.ImageField(upload_to=r'storage/pictures/decores/',null = False)
+
+class DecoreType(models.Model):
+    event_type = models.ForeignKey('events.EventType',on_delete=models.CASCADE)
+    decore = models.ForeignKey(Decore,on_delete=models.CASCADE)
 
 class Booking(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -89,7 +112,7 @@ class Booking(models.Model):
     end_time = models.TimeField()
 
     def __str__(self):
-        return f"{self.user.username} - {self.service.name} on {self.date}"
+        return f"{self.user.first_name} {self.user.last_name} - {self.service.name} on {self.date}"
 
 class FavoriteService(models.Model):
     user =  models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
