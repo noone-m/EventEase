@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from accounts.permissions import IsAdminUser,IsOwner
+from accounts.permissions import IsAdminUser,IsOwner,IsOwnerOrAdminUser
 # from locations.serializers import LocationSerializer
 from locations.models import Address, Location
 from locations.serializers import AddressSerializer,LocationSerializer
@@ -32,10 +32,15 @@ class FoodServiceViewSet(ModelViewSet):
 
 #there should be thruttle on how many times he can submit the application
 class ServiceProviderApplicationView(APIView):
+
     def post(self, request):
         location_serializer = LocationSerializer(data=request.data)
         applicatoin_serializer = ServiceProviderApplicationSerializer(data=request.data)
         user = request.user
+        applications = ServiceProviderApplication.objects.filter(user = request.user)
+        for application in applications:
+            if application.status in ['Approved','Pending']:
+                return Response({'message': 'if you have approved application or pending one you can not send another application'}, status=status.HTTP_400_BAD_REQUEST)
         if location_serializer.is_valid():
 
             latitude = location_serializer.validated_data['latitude']
@@ -89,13 +94,62 @@ class ServiceProviderApplicationView(APIView):
                 else:
                     return Response(applicatoin_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response({'detail': 'Could not fetch data from OpenStreetMap'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'Could not fetch data from OpenStreetMap'}, status=status.HTTP_400_BAD_REQUEST)
         return Response(location_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self,request):
-        applications = ServiceProviderApplication.objects.all()
+        if request.user.is_superuser:
+            applications = ServiceProviderApplication.objects.all()
+        else : 
+            applications = ServiceProviderApplication.objects.filter(user = request.user)
         application_serializer = ServiceProviderApplicationSerializer(applications,many = True,context = {'request':request})
         return Response(application_serializer.data)
+    
+    
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAuthenticated()]
+        elif self.request.method == 'POST':
+            return [IsAuthenticated()]
+        elif self.request.method in ['PUT']:
+            return [IsOwner()] 
+
+
+class ServiceProviderApplicationDetailView(APIView):
+
+
+    def get(self, request, pk):
+        try:
+            application = ServiceProviderApplication.objects.get(id=pk)
+            self.check_object_permissions(self.request, application)
+        except ServiceProviderApplication.DoesNotExist:
+            return Response({'message':'application does not exist'},status=status.HTTP_400_BAD_REQUEST)
+        serializer = ServiceProviderApplicationSerializer(application, context={'request': request})
+        return Response(serializer.data)
+
+
+    def put(self, request, pk):
+        try:
+            application = ServiceProviderApplication.objects.get(id=pk)
+            self.check_object_permissions(self.request, application)
+        except ServiceProviderApplication.DoesNotExist:
+            return Response({'message':'application does not exist'},status=status.HTTP_400_BAD_REQUEST)
+        
+        if application.status == 'Pending' :
+            pass
+        else : 
+            return Response({'message':'you can update application only when status is pending '},status=status.HTTP_400_BAD_REQUEST)
+        serializer = ServiceProviderApplicationSerializer(application, data=request.data, partial = True, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsOwnerOrAdminUser()]
+        elif self.request.method == 'PUT':
+            return [IsOwner()] 
 
 class ApproveApplication(APIView):
     permission_classes = [IsAdminUser]
@@ -137,6 +191,7 @@ class DeclineApplication(APIView):
         application = ServiceProviderApplication.objects.get(id=pk)
         application.status = 'Rejected'
         application.save()
+        return Response({'m':'service has been declined successfully'})
 
 
 class UserFavoriteServices(APIView):

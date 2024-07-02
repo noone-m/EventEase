@@ -23,7 +23,7 @@ class ServiceProviderApplication(models.Model):
         return f'{self.user.email} - {self.service_type}'
 
 class Service(models.Model):
-    service_provider = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    service_provider = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     description = models.TextField(null = True)
     service_type = models.ForeignKey(ServiceType,on_delete = models.CASCADE)

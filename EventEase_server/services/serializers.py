@@ -34,7 +34,11 @@ class ServiceProviderApplicationSerializer(serializers.ModelSerializer):
     
     def validate(self, attrs):
         print(attrs)
-        if ('service_type' in attrs and 'other_type' in attrs) or ('service_type' not in attrs and 'other_type' not in attrs):
+        request = self.context['request']
+        if request.method == 'PUT':
+            if ('service_type' in attrs and 'other_type' in attrs):
+                raise serializers.ValidationError("Request body should contain either 'service_type' or 'other_type', not both.")
+        elif ('service_type' in attrs and 'other_type' in attrs) or ('service_type' not in attrs and 'other_type' not in attrs):
             raise serializers.ValidationError("Request body should contain either 'service_type' or 'other_type', not both.")
         return super().validate(attrs)
 

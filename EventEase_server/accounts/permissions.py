@@ -1,9 +1,23 @@
-from rest_framework.permissions import BasePermission,SAFE_METHODS
+from rest_framework.permissions import BasePermission,SAFE_METHODS,IsAuthenticated
 from  .models import OTP,EmailVerified
+
+
 class IsOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
         return request.user == obj.user
     
+    
+class IsOwnerOrAdminUser(BasePermission):
+    """
+    Custom permission to only allow owners of an object or admin users to view it.
+    """
+    def has_permission(self, request, view):
+        return IsAuthenticated()
+    
+    def has_object_permission(self, request, view, obj):
+        # Check if the request user is the owner or an admin
+        print('object level')
+        return obj.user == request.user or request.user.is_superuser
 class IsAdminUser(BasePermission):
     """
     Allows access only to admin users.
