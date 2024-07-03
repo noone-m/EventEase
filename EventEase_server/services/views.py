@@ -1,8 +1,10 @@
+from django.shortcuts import get_object_or_404
 import requests
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from accounts.permissions import IsAdminUser,IsOwner,IsOwnerOrAdminUser
 # from locations.serializers import LocationSerializer
@@ -212,34 +214,59 @@ class UserFavoriteServices(APIView):
 
 class ServiceViewSet(ModelViewSet):
     queryset = Service.objects.all()
-    serializer_class = ServiceSerializer
 
-    def retrieve(self, request, pk=None):
-        # Get the service object
-        #   service = self.get_object()
+    def get_serializer_class(self):
 
-        # Do something with the service object before returning it (e.g., modify data)
-        # ...
+        if self.action in ['list','create']:
+            serializer =  ServiceSerializer
+        elif self.action in ['retrieve','update','partial_update']:
+            pk = self.kwargs.get('pk')
+            try:
+                service = Service.objects.get(id=pk)
+                if service.service_type.type == 'food':
+                    return FoodServiceSerializer
+                elif service.service_type.type == 'DJ':
+                    return DJServiceSerializer
+            except Service.DoesNotExist:
+                raise ValidationError(f"No service found with primary key {pk}")
+        return serializer
 
-        # Return the serialized service data
-        # serializer = self.get_serializer(service)
-        if pk == None : 
-            return Response(self.queryset)
-        else:
-            service = Service.objects.get(id = pk)
-            if service.service_type.type == 'food':
-                serializer = FoodServiceSerializer
-            if service.service_type.type == 'DJ':
-                serializer = DJServiceSerializer
-            serializer = serializer(service)
-            return Response(serializer.data)
+    # def partial_update(self, request, *args, **kwargs):
+    #     instance = self.get_object()
+    #     print(f"Updating instance: {instance.id}, current area_limit_km: {instance.area_limit_km}")
+        
+    #     serializer = self.get_serializer(instance, data=request.data, partial=True)
+    #     if serializer.is_valid():
+    #         self.perform_update(serializer)
+    #         print(f"Updated instance: {serializer.data}")
+    #     else:
+    #         print(f"Validation errors: {serializer.errors}")
+        
+    #     return Response(serializer.data)
 
+    # def perform_update(self, serializer):
+    #     serializer.save()
 
+    def get_object(self):
+        # Override get_object to return the correct subclass instance
+        obj = super().get_object()
+        return self.get_subclass_instance(obj.id)
+
+    def get_subclass_instance(self, pk):
+        service = get_object_or_404(Service, pk=pk)
+        if service.service_type.type == 'food':
+            return FoodService.objects.get(pk=pk)
+        elif service.service_type.type == 'DJ':
+            pass
+        return service
+    
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy']:
             self.permission_classes = [IsAdminUser|IsOwner]
         elif self.action in['create']:
             self.permission_classes = [IsAdminUser]
+        elif self.action in['list','retrieve']:
+            self.permission_classes = [IsAuthenticated]
         else:
             pass
         return super().get_permissions()

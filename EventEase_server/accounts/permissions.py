@@ -4,9 +4,12 @@ from  .models import OTP,EmailVerified
 
 class IsOwner(BasePermission):
     def has_object_permission(self, request, view, obj):
-        return request.user == obj.user
+        try:
+            return request.user == obj.user
+        except AttributeError:
+            return request.user == obj.service_provider
     
-    
+
 class IsOwnerOrAdminUser(BasePermission):
     """
     Custom permission to only allow owners of an object or admin users to view it.
