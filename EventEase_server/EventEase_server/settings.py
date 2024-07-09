@@ -179,5 +179,5 @@ TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER ')
 
 
 MEDIA_ROOT = BASE_DIR / 'storage'
-
+MEDIA_URL = '/media/'
 CORS_ALLOW_ALL_ORIGINS = True
