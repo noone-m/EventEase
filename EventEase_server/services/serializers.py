@@ -1,7 +1,8 @@
 from locations.models import Address, Location
 from locations.serializers import LocationSerializer,AddressSerializer
 from photos.serializers import ServicePhotosSerializers
-from .models import FoodService,ServiceType,ServiceProviderApplication,FavoriteService,Service,DJService
+from .models import (FoodService,ServiceType,ServiceProviderApplication,FavoriteService,Service,DJService,Food
+,FoodType,FoodTypeService,FoodServiceFood)
 from rest_framework import serializers
 
 class FoodServiceSerializer(serializers.ModelSerializer):
@@ -59,3 +60,26 @@ class DJServiceSerializer(serializers.ModelSerializer):
         model = DJService
         fields = '__all__'
     
+class FoodTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FoodType
+        fields = '__all__'
+
+
+class FoodTypeServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FoodTypeService
+        fields = '__all__'
+
+
+class FoodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Food
+        fields = ['id', 'food_type', 'name', 'price', 'ingredients']
+
+class FoodServiceFoodSerializer(serializers.ModelSerializer):
+    food = FoodSerializer()
+
+    class Meta:
+        model = FoodServiceFood
+        fields = ['id', 'foodService', 'food']

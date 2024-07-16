@@ -124,7 +124,7 @@ class OTP(models.Model):
         return timezone.now() > self.expire_date
         
     def __str__(self):
-        return f'{self.user.email} - {self.code}'
+        return f'{self.code}'
    
         
 class PasswordChangeRequested(models.Model):

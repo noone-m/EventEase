@@ -6,12 +6,15 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
-from accounts.permissions import IsAdminUser,IsOwner,IsOwnerOrAdminUser
+from accounts.permissions import IsAdminUser,IsOwner,IsOwnerOrAdminUser,IsServiceOwnerOrAdmin
 # from locations.serializers import LocationSerializer
 from locations.models import Address, Location
 from locations.serializers import AddressSerializer,LocationSerializer
-from .models import ServiceType,Service,FoodService,ServiceProviderApplication,FavoriteService
-from .serializers import FoodServiceSerializer,ServiceTypeSerializer,ServiceProviderApplicationSerializer,FavoriteServiceSerializer,ServiceSerializer,DJServiceSerializer
+from .models import (ServiceType,Service,FoodService,ServiceProviderApplication,FavoriteService,FoodTypeService,
+FoodType,FoodServiceFood,Food)
+from .serializers import (FoodServiceSerializer,ServiceTypeSerializer,ServiceProviderApplicationSerializer,
+FavoriteServiceSerializer,ServiceSerializer,DJServiceSerializer,FoodTypeSerializer,FoodTypeServiceSerializer,
+FoodSerializer,FoodServiceFoodSerializer)
 
 
 class ServiceTypeViewSet(ModelViewSet):
@@ -37,7 +40,7 @@ class ServiceProviderApplicationView(APIView):
 
     def post(self, request):
         location_serializer = LocationSerializer(data=request.data)
-        applicatoin_serializer = ServiceProviderApplicationSerializer(data=request.data)
+        applicatoin_serializer = ServiceProviderApplicationSerializer(data=request.data, context={'request': request})
         user = request.user
         applications = ServiceProviderApplication.objects.filter(user = request.user)
         for application in applications:
@@ -78,11 +81,12 @@ class ServiceProviderApplicationView(APIView):
                     village_city = village_city
                 )
                 # if there is street name add it
-                street = osm_address['road']
-                if street is not None :
+                try:
+                    street = osm_address['road']
                     address.street= street
                     address.save()
-                
+                except KeyError:
+                    pass
                 location,created = Location.objects.get_or_create(
                     latitude = latitude,
                     longitude = longitude,
@@ -110,9 +114,9 @@ class ServiceProviderApplicationView(APIView):
     
     def get_permissions(self):
         if self.request.method == 'GET':
-            return [IsAuthenticated()]
+            return [IsOwnerOrAdminUser()]
         elif self.request.method == 'POST':
-            return [IsAuthenticated()]
+            return [permission() for permission in self.permission_classes]
         elif self.request.method in ['PUT']:
             return [IsOwner()] 
 
@@ -262,7 +266,7 @@ class ServiceViewSet(ModelViewSet):
     
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy']:
-            self.permission_classes = [IsAdminUser|IsOwner]
+            self.permission_classes = [IsServiceOwnerOrAdmin]
         elif self.action in['create']:
             self.permission_classes = [IsAdminUser]
         elif self.action in['list','retrieve']:
@@ -271,3 +275,101 @@ class ServiceViewSet(ModelViewSet):
             pass
         return super().get_permissions()
 
+
+class FoodTypeAPIView(APIView):
+
+    def post(self,requset,service_pk,**kwargs):
+        service = get_object_or_404(FoodService,id = service_pk)
+        user = requset.user
+        serialzer = FoodTypeSerializer(data = requset.data)
+        if serialzer.is_valid():
+            type,created = FoodType.objects.get_or_create(type = serialzer.validated_data['type'])
+            print(type)
+            food_type_service,created = FoodTypeService.objects.get_or_create(foodService = service,foodType=type)
+            food_type_service.save()
+            return Response(serialzer.data,status=status.HTTP_201_CREATED)
+        return Response(serialzer.errors)
+    
+
+    def get(self,requset,service_pk,**kwargs):
+        food_service = FoodService.objects.get(id = service_pk)
+        user = requset.user
+        types_of_food = FoodTypeService.objects.filter(foodService = food_service).all()
+        print(types_of_food)
+        serialzer = FoodTypeServiceSerializer(types_of_food,many = True)
+        return Response(serialzer.data,status=status.HTTP_200_OK)
+    
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAuthenticated()]
+        elif self.request.method == 'POST':
+            return [IsServiceOwnerOrAdmin()] 
+        
+
+class DeleteRetrieveFoodTypeAPIView(APIView):
+
+    def delete(self, request, service_pk, type_pk,**kwargs):
+        service = get_object_or_404(FoodService, id=service_pk)
+        
+        if not type_pk:
+            return Response({'detail': 'Type is required to delete.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        type_instance = get_object_or_404(FoodType, id=type_pk)
+        food_type_service = get_object_or_404(FoodTypeService, foodService=service, foodType=type_instance)
+
+        food_type_service.delete()
+        return Response({'detail': 'Food type deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+
+    def get(self, request, service_pk, type_pk,**kwargs):
+        food_type = get_object_or_404(FoodType,id = type_pk)
+        serialzer = FoodTypeSerializer(food_type)
+        return Response(serialzer.data,status=status.HTTP_200_OK)
+    
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAuthenticated()]
+        elif self.request.method == 'DELETE':
+            return [IsServiceOwnerOrAdmin()] 
+    
+
+class FoodAPIView(APIView):
+    
+    def post(self, request, service_pk, type_pk, **kwargs):
+        service = get_object_or_404(FoodService, id=service_pk)
+        food_type = get_object_or_404(FoodType, id=service_pk)
+        serializer = FoodSerializer(data=request.data)
+        if serializer.is_valid():
+            food, created = Food.objects.get_or_create(
+                food_type=food_type,
+                name=serializer.validated_data['name'],
+                price =  serializer.validated_data['price'],
+                ingredients = serializer.validated_data.get('ingredients','')
+                # defaults={'ingredients' : serializer.validated_data.get('ingredients','')}
+            )
+            FoodServiceFood.objects.create(foodService=service, food=food)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, service_pk, food_pk, **kwargs):
+        if food_pk:
+            food = get_object_or_404(Food,id = food_pk)
+            serializer = FoodSerializer(food)
+            return Response(serializer.data, status=status.HTTP_200_OK)            
+        service = get_object_or_404(FoodService, id=service_pk)
+        foods = FoodServiceFood.objects.filter(foodService=service)
+        serializer = FoodServiceFoodSerializer(foods, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def delete(self, request, service_pk, food_pk, **kwargs):
+        service = get_object_or_404(FoodService, id=service_pk)
+        food_service_food = get_object_or_404(FoodServiceFood, foodService=service, food_id=food_pk)
+        food_service_food.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAuthenticated()]
+        elif self.request.method in ['DELETE', 'POST']:
+            return [IsServiceOwnerOrAdmin()] 
+    

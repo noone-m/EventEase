@@ -21,14 +21,17 @@ class IsServiceOwner(BasePermission):
             return False
         
     def has_permission(self, request, view):
-        service_pk = view.kwargs['service_pk']
+        try : 
+            service_pk = view.kwargs['service_pk']
+        except KeyError:
+            service_pk = view.kwargs['pk']
         service = get_object_or_404(Service,id = service_pk)
         return service.service_provider == request.user
     
 
 class IsOwnerOrAdminUser(BasePermission):
     """
-    Custom permission to only allow owners of an object or admin users to view it.
+    Custom permission to grant only owners of an object or admin users the permissoins.
     """
     def has_permission(self, request, view):
         return IsAuthenticated()
@@ -70,7 +73,7 @@ class IsEmailVerified(BasePermission):
             emailVerified = EmailVerified.objects.get(user = request.user)
         except EmailVerified.DoesNotExist:
             return False
-        return EmailVerified.is_verified      
+        return emailVerified.is_verified      
     
 
 class IsServiceOwnerOrAdmin(BasePermission):

@@ -64,7 +64,7 @@ class Register(APIView):
         if serializer.is_valid():
             user = serializer.save()
             token ,created= Token.objects.get_or_create(user=user)
-            return Response({'message': token.key},status=status.HTTP_201_CREATED)
+            return Response({'Token': token.key},status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
  # i think throttle here is important 
@@ -81,7 +81,7 @@ class GenerateOTP(APIView):
                 return Response({'message' : 'you are already verified'},status=status.HTTP_400_BAD_REQUEST)
             otp.code = verification_code
             otp.save()
-            return Response({'message' : 'the code has been sent successfully'},status=status.HTTP_201_CREATED)
+            return Response({'code' : f'{otp}'},status=status.HTTP_201_CREATED)
 
 # throttle here for brute force
 class VerifyOTP(APIView):
@@ -201,13 +201,13 @@ class GenerateVerificationLink(APIView):
             # utils.send_verifcation_link('reciever@gmail.com',verification_token)
             email_verified.verfication_token = verification_token
             email_verified.save()
-            return Response({'message' : 'the verfication link has been sent successfully'},status=status.HTTP_201_CREATED)
+            return Response({'Token' : verification_token},status=status.HTTP_201_CREATED)
 
 # throttle here for brute force
 class VerifyEmail(APIView):
     permission_classes = [IsAuthenticated,]
-    def get(self,request):
-        verification_token = request.query_params.get('token')
+    def post(self,request):
+        verification_token = request.query_params.get('Token')
         try :
             email_verified = EmailVerified.objects.get(user = request.user)
         except EmailVerified.DoesNotExist:

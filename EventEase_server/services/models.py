@@ -84,7 +84,6 @@ class PhotoGrapherService(Service):
 
 
 class DecorationService(Service):
-    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2) 
     area_limit_km = models.IntegerField()
 
 class EntertainementService(Service):
@@ -98,7 +97,7 @@ class Decore(models.Model):
     quantity  = models.IntegerField()
     avialable_quantity  = models.IntegerField()
     hourly_rate = models.DecimalField(max_digits=10, decimal_places=2) 
-    photo = models.ImageField(upload_to=r'storage/pictures/decores/',null = False)
+    # photo = models.ImageField(upload_to=r'storage/pictures/decores/',null = False)  i should convert this to many to one relation
 
 class DecoreType(models.Model):
     event_type = models.ForeignKey('events.EventType',on_delete=models.CASCADE)
