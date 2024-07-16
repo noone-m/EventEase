@@ -10,8 +10,8 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from services.models import Service
 from accounts.permissions import IsServiceOwner, IsServiceOwnerOrAdmin
-from . models import ServicePhotos,ServiceProfilePhoto
-from . serializers import ServicePhotosSerializers,ServiceProfilePhotoSerialzer
+from . models import ServicePhotos,ServiceProfilePhoto,FoodPhotos,Food,MainFoodPhoto
+from . serializers import ServicePhotosSerializers,ServiceProfilePhotoSerialzer,FoodPhotosSerializers,MainFoodPhotoSerializer
 
 
 class ServicePhotosAPIView(APIView):
@@ -94,3 +94,77 @@ class ServiceProfilePhotoAPIView(APIView):
             return [IsAuthenticated()]
         elif self.request.method in ['POST','PUT']:
             return [IsServiceOwnerOrAdmin()] 
+        
+
+class FoodPhotosAPIView(APIView):
+    parser_classes = [MultiPartParser]
+
+    def get(self, request, service_pk, type_pk, food_pk, photo_pk=None):
+        food = get_object_or_404(Food, id=food_pk)
+        if photo_pk:
+            photo = get_object_or_404(FoodPhotos, id=photo_pk, food=food)
+            serializer = FoodPhotosSerializers(photo)
+            return Response(serializer.data)
+        photos = FoodPhotos.objects.filter(food=food)
+        serializer = FoodPhotosSerializers(photos, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, service_pk, type_pk, food_pk):
+        food = get_object_or_404(Food, id=food_pk)
+        serializer = FoodPhotosSerializers(data=request.data)
+        if serializer.is_valid():
+            serializer.save(food=food)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, service_pk, type_pk, food_pk, photo_pk):
+        photo = get_object_or_404(FoodPhotos, id=photo_pk)
+        image_path = str(photo.image)
+        try:
+            full_image_path = os.path.join(settings.MEDIA_ROOT, image_path)
+            os.remove(full_image_path)
+        except FileNotFoundError:
+            pass
+        photo.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAuthenticated()]
+        elif self.request.method == 'POST':
+            return [IsServiceOwnerOrAdmin()]
+        elif self.request.method == 'DELETE':
+            return [IsServiceOwnerOrAdmin()]
+        
+
+class MainFoodPhotoAPIView(APIView):
+
+    def get(self, request, service_pk, type_pk, food_pk):
+        main_photo = get_object_or_404(MainFoodPhoto, food_id=food_pk)
+        serializer = MainFoodPhotoSerializer(main_photo)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, service_pk, type_pk, food_pk):
+        food = get_object_or_404(Food, id=food_pk)
+        serializer = MainFoodPhotoSerializer(data=request.data)
+        if serializer.is_valid():
+            main_photo, created = MainFoodPhoto.objects.update_or_create(
+                food=food,
+                defaults={'foodPhoto': serializer.validated_data['foodPhoto']}
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, service_pk, type_pk, food_pk):
+        main_photo = get_object_or_404(MainFoodPhoto, food_id=food_pk)
+        main_photo.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAuthenticated()]
+        elif self.request.method == 'POST':
+            return [IsServiceOwnerOrAdmin()]
+        elif self.request.method == 'DELETE':
+            return [IsServiceOwnerOrAdmin()]
