@@ -6,22 +6,46 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.generics import RetrieveUpdateAPIView
 from accounts.permissions import IsAdminUser,IsOwner,IsOwnerOrAdminUser,IsServiceOwnerOrAdmin
 # from locations.serializers import LocationSerializer
 from locations.models import Address, Location
 from locations.serializers import AddressSerializer,LocationSerializer
 from .models import (ServiceType,Service,FoodService,ServiceProviderApplication,FavoriteService,FoodTypeService,
-FoodType,FoodServiceFood,Food)
+FoodType,FoodServiceFood,Food,DJService)
 from .serializers import (FoodServiceSerializer,ServiceTypeSerializer,ServiceProviderApplicationSerializer,
 FavoriteServiceSerializer,ServiceSerializer,DJServiceSerializer,FoodTypeSerializer,FoodTypeServiceSerializer,
 FoodSerializer,FoodServiceFoodSerializer)
 
+
+def get_model_for_service_type(type):
+    if type == 'food':
+        return FoodService
+    if type == 'DJservice':
+        return DJService
+    return None
+
+def get_serializer_for_service_type(type):
+    if type == 'food':
+        return FoodServiceSerializer
+    if type == 'DJservice':
+        return DJServiceSerializer
+    return None
 
 class ServiceTypeViewSet(ModelViewSet):
     queryset = ServiceType.objects.all()
     serializer_class = ServiceTypeSerializer
     permission_classes = [IsAdminUser]
 
+
+    def get_permissions(self):
+        if self.action in ['update', 'partial_update', 'destroy','creat']:
+            self.permission_classes = [IsAdminUser]
+        elif self.action in['list']:
+            self.permission_classes = [IsAuthenticated]
+        else:
+            pass
+        return super().get_permissions()
 
 class FoodServiceViewSet(ModelViewSet):
     queryset = FoodService.objects.all()
@@ -161,33 +185,27 @@ class ApproveApplication(APIView):
     permission_classes = [IsAdminUser]
     def post(self,request,**kwargs):
         pk = kwargs.get('pk')
-        application = ServiceProviderApplication.objects.get(id=pk)
+        application = get_object_or_404(ServiceProviderApplication,id=pk)
         application.status = 'Approved'
         user = application.user
         user.is_service_provider = True
         application.save()
         user.save()
-        if application.service_type.type == 'food': 
-            service,created = FoodService.objects.get_or_create(
-                service_provider = user,
-                name = application.name,
-                service_type = application.service_type,
-                phone = application.phone,
-                location = application.location
-            )
-            service.save()
-            
-        # if application.service_type.type == 'venue': 
-        #     service,created = FoodService.objects.get_or_create(
-        #         service_provider = user,
-        #         name = application.name,
-        #         service_type = application.service_type,
-        #         phone = application.phone,
-        #         location = application.location
-        #     )
-        #     service.save()
-            return Response({'message':'approved'},status= status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        if not application.service_type:
+            return Response({'message':'you should provide a valid type for service'},status=status.HTTP_400_BAD_REQUEST)
+       
+        model = get_model_for_service_type(application.service_type.type) 
+        service,created = model.objects.get_or_create(
+            service_provider = user,
+            name = application.name,
+            service_type = application.service_type,
+            phone = application.phone,
+            location = application.location
+        )
+        service.save()
+        return Response({'message':'approved'},status= status.HTTP_200_OK)
+
     
 #Implement this in a function
 class DeclineApplication(APIView):
@@ -225,31 +243,8 @@ class ServiceViewSet(ModelViewSet):
             serializer =  ServiceSerializer
         elif self.action in ['retrieve','update','partial_update']:
             pk = self.kwargs.get('pk')
-            try:
-                service = Service.objects.get(id=pk)
-                if service.service_type.type == 'food':
-                    return FoodServiceSerializer
-                elif service.service_type.type == 'DJ':
-                    return DJServiceSerializer
-            except Service.DoesNotExist:
-                raise ValidationError(f"No service found with primary key {pk}")
-        return serializer
-
-    # def partial_update(self, request, *args, **kwargs):
-    #     instance = self.get_object()
-    #     print(f"Updating instance: {instance.id}, current area_limit_km: {instance.area_limit_km}")
-        
-    #     serializer = self.get_serializer(instance, data=request.data, partial=True)
-    #     if serializer.is_valid():
-    #         self.perform_update(serializer)
-    #         print(f"Updated instance: {serializer.data}")
-    #     else:
-    #         print(f"Validation errors: {serializer.errors}")
-        
-    #     return Response(serializer.data)
-
-    # def perform_update(self, serializer):
-    #     serializer.save()
+            service = get_object_or_404(Service,id = pk)    
+        return get_serializer_for_service_type(service.service_type.type)
 
     def get_object(self):
         # Override get_object to return the correct subclass instance
@@ -258,11 +253,9 @@ class ServiceViewSet(ModelViewSet):
 
     def get_subclass_instance(self, pk):
         service = get_object_or_404(Service, pk=pk)
-        if service.service_type.type == 'food':
-            return FoodService.objects.get(pk=pk)
-        elif service.service_type.type == 'DJ':
-            pass
-        return service
+        model = get_model_for_service_type(service.service_type.type)
+        sub_service = model.objects.get(id = service.id)
+        return sub_service
     
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy']:
@@ -373,3 +366,21 @@ class FoodAPIView(APIView):
         elif self.request.method in ['DELETE', 'POST']:
             return [IsServiceOwnerOrAdmin()] 
     
+
+class LocationDetailView(RetrieveUpdateAPIView):
+    serializer_class = LocationSerializer
+
+    def get_object(self):
+        service_pk = self.kwargs.get('service_pk')
+        service = get_object_or_404(Service,pk = service_pk)
+        if not service.location:
+            raise Location.DoesNotExist("Location not found for this service.")
+        return service.location
+
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            self.permission_classes = [IsAuthenticated]
+        if self.request.method in ['PUT','PATCH']:
+            self.permission_classes = [IsServiceOwnerOrAdmin]
+        return super().get_permissions()

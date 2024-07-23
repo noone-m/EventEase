@@ -1,15 +1,19 @@
 from django.urls import path,include
 from .views import (FoodServiceViewSet,ServiceTypeViewSet,ServiceProviderApplicationView,ApproveApplication,
 ServiceViewSet,DeclineApplication,ServiceProviderApplicationDetailView,FoodTypeAPIView,
-DeleteRetrieveFoodTypeAPIView,FoodAPIView)
+DeleteRetrieveFoodTypeAPIView,FoodAPIView,LocationDetailView)
 from photos.views import ServicePhotosAPIView,ServiceProfilePhotoAPIView,FoodPhotosAPIView,MainFoodPhotoAPIView
+from locations.views import AddressViewSet,LocationViewSet
 from rest_framework.routers import DefaultRouter
 
 
 router = DefaultRouter()
 # router.register('food-services', FoodServiceViewSet)
+router.register(r'locations', LocationViewSet)
 router.register('type',ServiceTypeViewSet)
+router.register(r'addresses', AddressViewSet)   
 router.register('',ServiceViewSet)
+
 
 # router.register('locations',LocationViewSet)
 urlpatterns = [
@@ -18,6 +22,7 @@ urlpatterns = [
     path('applications/<int:pk>/approve/',ApproveApplication.as_view()),
     path('applications/<int:pk>/decline/',DeclineApplication.as_view()),
     path('<int:service_pk>/photos/',ServicePhotosAPIView.as_view()),
+    path('<int:service_pk>/location/',LocationDetailView.as_view()),
     path('<int:service_pk>/photos/<int:photo_pk>/',ServicePhotosAPIView.as_view()),
     path('<int:service_pk>/profile-photo/',ServiceProfilePhotoAPIView.as_view()),
     path('<int:service_pk>/food-type/',FoodTypeAPIView.as_view()),

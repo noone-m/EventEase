@@ -64,10 +64,10 @@ class FoodTypeService(models.Model):
 
 
 class DJService(Service):
-    music_genre = models.CharField(max_length=255)
-    equipment_provided = models.TextField()
-    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2) 
-    area_limit_km = models.IntegerField()
+    music_genre = models.CharField(max_length=255, null = True)
+    equipment_provided = models.TextField(null = True)
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, null = True) 
+    area_limit_km = models.IntegerField(null = True)
 
 #   what if venue provide food?
 class Venue(Service):
