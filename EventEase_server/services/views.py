@@ -412,24 +412,6 @@ class LocationDetailView(RetrieveUpdateAPIView):
         return super().get_permissions()
 
 class DecorAPIView(APIView):
-    
-    # def post(self, request, service_pk, **kwargs):
-    #     service = get_object_or_404(DecorationService, id=service_pk)
-    #     decorSerializer = DecorSerializer(data=request.data)
-    #     decorEventTypeSerializer = DecorEventTypeSerializer(data=request.data)
-    #     if decorSerializer.is_valid():
-
-    #         decor, created = Decor.objects.get_or_create(
-    #             decor_service = service,
-    #             name=decorSerializer.validated_data['name'],
-    #             quantity =  decorSerializer.validated_data['quantity'],
-    #             hourly_rate = decorSerializer.validated_data.get('hourly_rate',0),
-    #             price = decorSerializer.validated_data.get('price',0),
-    #             description = decorSerializer.validated_data.get('description','')
-    #         )
-    #         return Response(decorSerializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(decorSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
     def post(self, request, service_pk, **kwargs):
         service = get_object_or_404(DecorationService, id=service_pk)

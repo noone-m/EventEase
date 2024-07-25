@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import Avg
 from locations.models import Location
 from rest_framework.response import  Response
 
@@ -30,12 +31,18 @@ class Service(models.Model):
     # in future phone should be unique
     phone = models.CharField(max_length = 15,null = False)
     location = models.ForeignKey(Location, on_delete=models.CASCADE, null = True)
+    avg_rating = models.FloatField(default = 0)
     created_at = models.DateTimeField(auto_now_add = True, null = True)
     updated_at = models.DateTimeField(auto_now= True, null = True)
     
     def __str__(self):
         return self.name
 
+    def update_average_rating(self):
+        avg_rating = self.service_reviews.aggregate(Avg('rating'))['rating__avg']
+        self.avg_rating = avg_rating
+        self.num_ratings = self.service_reviews.count()
+        self.save()
 
 class FoodType(models.Model):
     type = models.CharField(max_length=255)
