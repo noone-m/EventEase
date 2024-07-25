@@ -1,10 +1,10 @@
 from django.conf import settings
 from django.db import models
 from locations.models import Location
-
+from rest_framework.response import  Response
 
 class ServiceType(models.Model):
-    type = models.CharField(max_length=255)
+    type = models.CharField(max_length=255, unique=True)
 
 
 class ServiceProviderApplication(models.Model):
@@ -69,39 +69,47 @@ class DJService(Service):
     hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, null = True) 
     area_limit_km = models.IntegerField(null = True)
 
-#   what if venue provide food?
 class Venue(Service):
-    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2) 
-    capacity = models.IntegerField()
-    amenities = models.TextField() # like wifi,parking,audio-visual devices
-    minimum_guests = models.IntegerField()
-    maximum_guests = models.IntegerField()
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, null = True) 
+    capacity = models.IntegerField(null = True)
+    amenities = models.TextField(null = True) # like wifi,parking,audio-visual devices
     
 
 class PhotoGrapherService(Service):
-    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2) 
-    area_limit_km = models.IntegerField()
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, null = True) 
+    area_limit_km = models.IntegerField(null = True)
 
 
 class DecorationService(Service):
-    area_limit_km = models.IntegerField()
+    area_limit_km = models.IntegerField(null = True)
 
 class EntertainementService(Service):
-    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2) 
-    area_limit_km = models.IntegerField()
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, null = True) 
+    area_limit_km = models.IntegerField(null = True)
 
 
-class Decore(models.Model):
-    decore_service = models.ForeignKey(DecorationService,on_delete=models.CASCADE)
+class Decor(models.Model):
+    decor_service = models.ForeignKey(DecorationService,on_delete=models.CASCADE)
     name = models.CharField(max_length = 255)
     quantity  = models.IntegerField()
-    avialable_quantity  = models.IntegerField()
-    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2) 
-    # photo = models.ImageField(upload_to=r'storage/pictures/decores/',null = False)  i should convert this to many to one relation
+    available_quantity  = models.IntegerField()
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2,null = True)
+    price =  models.DecimalField(max_digits=10, decimal_places=2, null = True)
+    description = models.TextField(null=True)
 
-class DecoreType(models.Model):
+    def clean(self):
+        super().clean()
+        if self.hourly_rate is None and self.price is None:
+            return Response({'message':'Either hourly_rate or price must be provided.'},status=400)
+        
+    def save(self, *args, **kwargs):
+        self.available_quantity = self.quantity
+        self.clean()
+        super().save(*args, **kwargs)
+
+class DecorEventType(models.Model):
     event_type = models.ForeignKey('events.EventType',on_delete=models.CASCADE)
-    decore = models.ForeignKey(Decore,on_delete=models.CASCADE)
+    decor = models.ForeignKey(Decor,on_delete=models.CASCADE)
 
 class Booking(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

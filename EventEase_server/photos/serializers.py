@@ -1,4 +1,4 @@
-from .models import ServicePhotos,ServiceProfilePhoto,FoodPhotos,Food,MainFoodPhoto
+from .models import ServicePhotos,ServiceProfilePhoto,FoodPhotos,Food,MainFoodPhoto,DecorPhotos,MainDecorPhoto
 from locations.models import Location,Address
 from rest_framework import serializers
 
@@ -28,3 +28,16 @@ class MainFoodPhotoSerializer(serializers.ModelSerializer):
         model = MainFoodPhoto
         fields = ['id', 'food', 'foodPhoto']
         read_only_fields = ['id', 'food']
+
+
+class DecorPhotosSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DecorPhotos
+        fields = ['id','decor','image']
+        read_only_fields = ['id','decor']
+    
+class MainDecorPhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MainDecorPhoto
+        fields = ['id', 'decor', 'decorPhoto']
+        read_only_fields = ['id', 'decor']

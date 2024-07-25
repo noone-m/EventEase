@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/accounts/', include('accounts.endpoints')),
     path('api/services/', include('services.endpoints')),
+    path('api/events/', include('events.endpoints')),
     re_path(r'^media/(?P<path>.*)$', ProtectedMediaView.as_view(), name='media')
 ]
 # if settings.DEBUG:

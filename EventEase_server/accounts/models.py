@@ -140,7 +140,7 @@ class EmailVerified(models.Model):
     expire_date = models.DateTimeField(now)
     
     def save(self, *args, **kwargs):
-        self.expire_date = timezone.now() + timedelta(seconds = 60)
+        self.expire_date = timezone.now() + timedelta(seconds = 120)
         super().save(*args, **kwargs)
 
     def is_expired(self):

@@ -1,8 +1,11 @@
 from locations.models import Address, Location
+from events.models import EventType
 from locations.serializers import LocationSerializer,AddressSerializer
+from events.serializers import EventTypeSerializer
 from photos.serializers import ServicePhotosSerializers
-from .models import (FoodService,ServiceType,ServiceProviderApplication,FavoriteService,Service,DJService,Food
-,FoodType,FoodTypeService,FoodServiceFood)
+from .models import (FoodService, ServiceType, ServiceProviderApplication, FavoriteService, Service, DJService, Food
+, FoodType, FoodTypeService, FoodServiceFood, Venue, PhotoGrapherService, EntertainementService, Decor,
+DecorEventType)
 from rest_framework import serializers
 
 class FoodServiceSerializer(serializers.ModelSerializer):
@@ -83,3 +86,54 @@ class FoodServiceFoodSerializer(serializers.ModelSerializer):
     class Meta:
         model = FoodServiceFood
         fields = ['id', 'foodService', 'food']
+
+class VenueSerializer(serializers.ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get('request')
+        if request and request.method in ['PUT','PATCH']:
+            self.fields['location'].read_only = True
+    
+    class Meta:
+        model = Venue
+        fields = '__all__'
+    
+
+class PhotoGrapherServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PhotoGrapherService
+        fields = '__all__'
+
+class EntertainementServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EntertainementService
+        fields = '__all__'
+
+class DecorationServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EntertainementService
+        fields = '__all__'
+
+class DecorEventTypeSerializer(serializers.ModelSerializer):
+    event_type = EventTypeSerializer()
+    class Meta:
+        model = DecorEventType
+        fields = ['event_type']
+    
+class DecorEventTypeListSerializer(serializers.Serializer):
+    decor_event_types = serializers.ListField()
+
+class DecorSerializer(serializers.ModelSerializer):
+    decor_event_types = serializers.SerializerMethodField()
+    class Meta:
+        model = Decor
+        fields = ['id','decor_service', 'name', 'quantity', 'hourly_rate', 'available_quantity', 'price', 'description','decor_event_types']
+        read_only_fields = ['id','avialable_quantity','decor_service','available_quantity']
+
+    def get_decor_event_types(self, obj):
+        print(obj)
+        decor_event_types = DecorEventType.objects.filter(decor=obj)
+        print(decor_event_types)
+        return DecorEventTypeSerializer(decor_event_types, many=True).data
+    
+

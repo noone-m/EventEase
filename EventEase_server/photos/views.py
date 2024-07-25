@@ -8,10 +8,11 @@ from rest_framework.generics import DestroyAPIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
-from services.models import Service
+from services.models import Service,Decor
 from accounts.permissions import IsServiceOwner, IsServiceOwnerOrAdmin
-from . models import ServicePhotos,ServiceProfilePhoto,FoodPhotos,Food,MainFoodPhoto
-from . serializers import ServicePhotosSerializers,ServiceProfilePhotoSerialzer,FoodPhotosSerializers,MainFoodPhotoSerializer
+from . models import ServicePhotos,ServiceProfilePhoto,FoodPhotos,Food,MainFoodPhoto,DecorPhotos,MainDecorPhoto
+from . serializers import (ServicePhotosSerializers,ServiceProfilePhotoSerialzer,FoodPhotosSerializers,
+MainFoodPhotoSerializer, DecorPhotosSerializer, MainDecorPhotoSerializer)
 
 
 class ServicePhotosAPIView(APIView):
@@ -166,5 +167,78 @@ class MainFoodPhotoAPIView(APIView):
             return [IsAuthenticated()]
         elif self.request.method == 'POST':
             return [IsServiceOwnerOrAdmin()]
+        elif self.request.method == 'DELETE':
+            return [IsServiceOwnerOrAdmin()]
+        
+        
+class DecorPhotosAPIView(APIView):
+    parser_classes = [MultiPartParser]
+
+    def get(self, request, service_pk, decor_pk, photo_pk=None):
+        decor = get_object_or_404(Decor, id=decor_pk)
+        if photo_pk:
+            photo = get_object_or_404(DecorPhotos, id=photo_pk, decor=decor)
+            serializer = DecorPhotosSerializer(photo)
+            return Response(serializer.data)
+        photos = DecorPhotos.objects.filter(decor=decor)
+        serializer = DecorPhotosSerializer(photos, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, service_pk, decor_pk):
+        decor = get_object_or_404(Decor, id=decor_pk)
+        serializer = DecorPhotosSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(decor=decor)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, service_pk, decor_pk, photo_pk):
+        photo = get_object_or_404(DecorPhotos, id=photo_pk)
+        image_path = str(photo.image)
+        try:
+            full_image_path = os.path.join(settings.MEDIA_ROOT, image_path)
+            os.remove(full_image_path)
+        except FileNotFoundError:
+            pass
+        photo.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAuthenticated()]
+        elif self.request.method == 'POST':
+            return [IsServiceOwnerOrAdmin()]
+        elif self.request.method == 'DELETE':
+            return [IsServiceOwnerOrAdmin()]
+
+class MainDecorPhotoAPIView(APIView):
+
+    def get(self, request, service_pk, decor_pk):
+        main_photo = get_object_or_404(MainDecorPhoto, decor_id=decor_pk)
+        serializer = MainDecorPhotoSerializer(main_photo)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, service_pk, decor_pk):
+        decor = get_object_or_404(Decor, id=decor_pk)
+        serializer = MainDecorPhotoSerializer(data=request.data)
+        if serializer.is_valid():
+            main_photo, created = MainDecorPhoto.objects.update_or_create(
+                decor=decor,
+                defaults={'decorPhoto': serializer.validated_data['decorPhoto']}
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, service_pk, decor_pk):
+        main_photo = get_object_or_404(MainDecorPhoto, decor_id=decor_pk)
+        main_photo.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAuthenticated()]
+        elif self.request.method == 'POST':
+            return [IsServiceOwnerOrAdmin()]    
         elif self.request.method == 'DELETE':
             return [IsServiceOwnerOrAdmin()]

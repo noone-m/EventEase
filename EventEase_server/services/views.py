@@ -1,3 +1,4 @@
+import ast
 from django.shortcuts import get_object_or_404
 import requests
 from rest_framework.response import Response
@@ -11,11 +12,18 @@ from accounts.permissions import IsAdminUser,IsOwner,IsOwnerOrAdminUser,IsServic
 # from locations.serializers import LocationSerializer
 from locations.models import Address, Location
 from locations.serializers import AddressSerializer,LocationSerializer
+
+from events.models import EventType
+
 from .models import (ServiceType,Service,FoodService,ServiceProviderApplication,FavoriteService,FoodTypeService,
-FoodType,FoodServiceFood,Food,DJService)
-from .serializers import (FoodServiceSerializer,ServiceTypeSerializer,ServiceProviderApplicationSerializer,
-FavoriteServiceSerializer,ServiceSerializer,DJServiceSerializer,FoodTypeSerializer,FoodTypeServiceSerializer,
-FoodSerializer,FoodServiceFoodSerializer)
+FoodType,FoodServiceFood,Food,DJService,Venue,PhotoGrapherService,EntertainementService,DecorationService,
+Decor,DecorEventType)
+
+from .serializers import (FoodServiceSerializer, ServiceTypeSerializer, ServiceProviderApplicationSerializer,
+FavoriteServiceSerializer, ServiceSerializer, DJServiceSerializer, FoodTypeSerializer, FoodTypeServiceSerializer,
+FoodSerializer, FoodServiceFoodSerializer, VenueSerializer, PhotoGrapherServiceSerializer
+,EntertainementServiceSerializer, DecorationServiceSerializer, DecorSerializer,DecorEventTypeListSerializer
+)
 
 
 def get_model_for_service_type(type):
@@ -23,6 +31,14 @@ def get_model_for_service_type(type):
         return FoodService
     if type == 'DJservice':
         return DJService
+    if type == 'venue':
+        return Venue
+    if type == 'photographer':
+        return PhotoGrapherService
+    if type == 'entertainment':
+        return EntertainementService
+    if type == 'decoration':
+        return DecorationService     
     return None
 
 def get_serializer_for_service_type(type):
@@ -30,6 +46,14 @@ def get_serializer_for_service_type(type):
         return FoodServiceSerializer
     if type == 'DJservice':
         return DJServiceSerializer
+    if type == 'venue':
+        return VenueSerializer
+    if type == 'photographer':
+        return PhotoGrapherServiceSerializer
+    if type == 'entertainment':
+        return EntertainementServiceSerializer   
+    if type == 'decoration':
+        return DecorationServiceSerializer  
     return None
 
 class ServiceTypeViewSet(ModelViewSet):
@@ -241,6 +265,7 @@ class ServiceViewSet(ModelViewSet):
 
         if self.action in ['list','create']:
             serializer =  ServiceSerializer
+            return serializer
         elif self.action in ['retrieve','update','partial_update']:
             pk = self.kwargs.get('pk')
             service = get_object_or_404(Service,id = pk)    
@@ -267,6 +292,7 @@ class ServiceViewSet(ModelViewSet):
         else:
             pass
         return super().get_permissions()
+    
 
 
 class FoodTypeAPIView(APIView):
@@ -384,3 +410,93 @@ class LocationDetailView(RetrieveUpdateAPIView):
         if self.request.method in ['PUT','PATCH']:
             self.permission_classes = [IsServiceOwnerOrAdmin]
         return super().get_permissions()
+
+class DecorAPIView(APIView):
+    
+    # def post(self, request, service_pk, **kwargs):
+    #     service = get_object_or_404(DecorationService, id=service_pk)
+    #     decorSerializer = DecorSerializer(data=request.data)
+    #     decorEventTypeSerializer = DecorEventTypeSerializer(data=request.data)
+    #     if decorSerializer.is_valid():
+
+    #         decor, created = Decor.objects.get_or_create(
+    #             decor_service = service,
+    #             name=decorSerializer.validated_data['name'],
+    #             quantity =  decorSerializer.validated_data['quantity'],
+    #             hourly_rate = decorSerializer.validated_data.get('hourly_rate',0),
+    #             price = decorSerializer.validated_data.get('price',0),
+    #             description = decorSerializer.validated_data.get('description','')
+    #         )
+    #         return Response(decorSerializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(decorSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def post(self, request, service_pk, **kwargs):
+        service = get_object_or_404(DecorationService, id=service_pk)
+        decorSerializer = DecorSerializer(data=request.data)
+        decor_event_types_list_serializer = DecorEventTypeListSerializer(data=request.data)
+        if decorSerializer.is_valid():
+            if decor_event_types_list_serializer.is_valid():
+                decor,created = Decor.objects.get_or_create(
+                        decor_service = service,
+                        name = decorSerializer.validated_data['name'],
+                        quantity  = decorSerializer.validated_data['quantity'],
+                        hourly_rate = decorSerializer.validated_data.get('hourly_rate',0.00),
+                        price = decorSerializer.validated_data.get('price',0.00),
+                        description = decorSerializer.validated_data.get('description',''),
+                )
+                decor_event_types = ast.literal_eval(decor_event_types_list_serializer.validated_data.get('decor_event_types')[0])
+                for event_type in decor_event_types:
+                    event_type = get_object_or_404(EventType,id = event_type)
+                    DecorEventType.objects.get_or_create(decor = decor, event_type = event_type)
+                return Response(DecorSerializer(decor).data, status=status.HTTP_201_CREATED)
+            return Response(decor_event_types_list_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(decorSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request, service_pk, decor_pk=None, **kwargs):
+        event_type_ids = request.query_params.getlist('event_type')
+
+        if decor_pk:
+            decor = get_object_or_404(Decor, id=decor_pk)
+            serializer = DecorSerializer(decor)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        service = get_object_or_404(DecorationService, id=service_pk)
+        decors = Decor.objects.filter(decor_service=service)
+
+        if event_type_ids:
+            decors = decors.filter(decoreventtype__event_type__in=event_type_ids).distinct()
+
+        serializer = DecorSerializer(decors, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def patch(self, request, service_pk, decor_pk, **kwargs):
+        service = get_object_or_404(DecorationService, id=service_pk)
+        decor = get_object_or_404(Decor, id=decor_pk, decor_service=service)
+        decor_event_types_list_serializer = DecorEventTypeListSerializer(data=request.data, partial = True)
+        decor_serializer = DecorSerializer(decor, data=request.data, partial=True)
+        if decor_event_types_list_serializer.is_valid():
+            DecorEventType.objects.filter(decor = decor).all().delete()
+            decor_event_types = ast.literal_eval(decor_event_types_list_serializer.validated_data.get('decor_event_types')[0])
+            for event_type in decor_event_types:
+                event_type = get_object_or_404(EventType,id = event_type)
+                DecorEventType.objects.get_or_create(decor = decor, event_type = event_type)
+
+            if decor_serializer.is_valid():
+                decor_serializer.save()
+                return Response(decor_serializer.data, status=status.HTTP_200_OK)
+            return Response(decor_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(decor_event_types_list_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def delete(self, request, service_pk, decor_pk, **kwargs):
+        service = get_object_or_404(DecorationService, id=service_pk)
+        decor = get_object_or_404(Decor, id=decor_pk, decor_service=service)
+        decor.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [IsAuthenticated()]
+        elif self.request.method in ['DELETE', 'POST', 'PUT', 'PATCH']:
+            return [IsServiceOwnerOrAdmin()] 
+    

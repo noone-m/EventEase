@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'reports',
     'wallet',
     'corsheaders',
+    # 'django_filter',
 ]
 
 MIDDLEWARE = [
