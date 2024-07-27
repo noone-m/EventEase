@@ -2,22 +2,29 @@ from locations.models import Address, Location
 from events.models import EventType
 from locations.serializers import LocationSerializer,AddressSerializer
 from events.serializers import EventTypeSerializer
+from accounts.serializers import AdminUserSerializer
 from photos.serializers import ServicePhotosSerializers
 from .models import (FoodService, ServiceType, ServiceProviderApplication, FavoriteService, Service, DJService, Food
 , FoodType, FoodTypeService, FoodServiceFood, Venue, PhotoGrapherService, EntertainementService, Decor,
 DecorEventType)
 from rest_framework import serializers
 
-class FoodServiceSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FoodService
-        fields = '__all__'
-    
 
 class ServiceTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceType
         fields = '__all__'
+
+class FoodServiceSerializer(serializers.ModelSerializer):
+    service_provider = AdminUserSerializer(read_only=True)
+    service_type = ServiceTypeSerializer(read_only=True)
+    location = LocationSerializer(read_only=True)
+    class Meta:
+        model = FoodService
+        fields = '__all__'
+    
+
+
 
 class ServiceProviderApplicationSerializer(serializers.ModelSerializer):
 
@@ -53,12 +60,18 @@ class FavoriteServiceSerializer(serializers.ModelSerializer):
         read_only_fields = ['id','user']
 
 class ServiceSerializer(serializers.ModelSerializer):
+    service_provider = AdminUserSerializer(read_only=True)
+    service_type = ServiceTypeSerializer(read_only=True)
+    location = LocationSerializer(read_only=True)
     class Meta:
         model = Service
         fields = '__all__'
 
 
 class DJServiceSerializer(serializers.ModelSerializer):
+    service_provider = AdminUserSerializer(read_only=True)
+    service_type = ServiceTypeSerializer(read_only=True)
+    location = LocationSerializer(read_only=True)
     class Meta:
         model = DJService
         fields = '__all__'
@@ -88,6 +101,9 @@ class FoodServiceFoodSerializer(serializers.ModelSerializer):
         fields = ['id', 'foodService', 'food']
 
 class VenueSerializer(serializers.ModelSerializer):
+    service_provider = AdminUserSerializer(read_only=True)
+    service_type = ServiceTypeSerializer(read_only=True)
+    location = LocationSerializer(read_only=True)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         request = self.context.get('request')
@@ -105,11 +121,17 @@ class PhotoGrapherServiceSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class EntertainementServiceSerializer(serializers.ModelSerializer):
+    service_provider = AdminUserSerializer(read_only=True)
+    service_type = ServiceTypeSerializer(read_only=True)
+    location = LocationSerializer(read_only=True)
     class Meta:
         model = EntertainementService
         fields = '__all__'
 
 class DecorationServiceSerializer(serializers.ModelSerializer):
+    service_provider = AdminUserSerializer(read_only=True)
+    service_type = ServiceTypeSerializer(read_only=True)
+    location = LocationSerializer(read_only=True)
     class Meta:
         model = EntertainementService
         fields = '__all__'

@@ -298,8 +298,10 @@ class MyServiceAPIView(APIView):
     def get(self,requset,**kwargs):
         user = requset.user
         service = Service.objects.filter(service_provider = user).first()
-        serialzer = ServiceSerializer(service)
-        return Response(serialzer.data,status=status.HTTP_200_OK)
+        serializer = get_serializer_for_service_type(service.service_type.type)
+        print(serializer)
+        serializer = serializer(service)
+        return Response(serializer.data,status=status.HTTP_200_OK)
 
 class FoodTypeAPIView(APIView):
 
