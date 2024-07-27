@@ -1,6 +1,7 @@
 from django.urls import path,include
 from .views import (Login,log_out,Register,UserViewSet,VerifyOTP,GenerateOTP,ListOTP,DestroyOTP,
-ChangePasswordRequested, ChangePassowrdRequests, UpdatePassword,VerifyEmail,GenerateVerificationLink,ListEmailVerified)
+ChangePasswordRequested, ChangePassowrdRequests, UpdatePassword,VerifyEmail,GenerateVerificationLink,
+ListEmailVerified,Hello)
 from services.views import UserFavoriteServices
 from rest_framework.routers import DefaultRouter
 
@@ -23,5 +24,7 @@ urlpatterns = [
     path('verification-link', GenerateVerificationLink.as_view()),
     path('verify-email/', VerifyEmail.as_view()),
     path('list-verification-tokens/', ListEmailVerified.as_view()),
+    path('hello/', Hello.as_view()),
+    
     path('',include(router.urls)),
 ] 

@@ -294,6 +294,12 @@ class ServiceViewSet(ModelViewSet):
         return super().get_permissions()
     
 
+class MyServiceAPIView(APIView):
+    def get(self,requset,**kwargs):
+        user = requset.user
+        service = Service.objects.filter(service_provider = user).first()
+        serialzer = ServiceSerializer(service)
+        return Response(serialzer.data,status=status.HTTP_200_OK)
 
 class FoodTypeAPIView(APIView):
 

@@ -39,6 +39,10 @@ class IsOwnerOrAdminUser(BasePermission):
     def has_object_permission(self, request, view, obj):
         # Check if the request user is the owner or an admin
         print('object level')
+        try:
+            return obj.reporter == request.user or request.user.is_superuser
+        except AttributeError:
+            pass
         return obj.user == request.user or request.user.is_superuser
 class IsAdminUser(BasePermission):
     """
@@ -81,3 +85,12 @@ class IsServiceOwnerOrAdmin(BasePermission):
         is_service_owner = IsServiceOwner()
         is_admin_user = IsAdminUser()
         return is_service_owner.has_permission(request,view) or is_admin_user.has_permission(request,view)
+    
+class DefaultOrIsAdminUser(BasePermission):
+    def has_permission(self, request, view):
+        # Check if the user has the default permissions
+        default_permissions = [permission() for permission in view.permission_classes]
+        if all(permission.has_permission(request, view) for permission in default_permissions):
+            return True
+        # If not, check if the user is an admin
+        return IsAdminUser().has_permission(request, view)

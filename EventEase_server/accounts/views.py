@@ -227,3 +227,10 @@ class ListEmailVerified(ListAPIView):
     permission_classes = [IsAdminUser,]
     serializer_class = EmailVerifiedSerializer
     queryset = EmailVerified.objects.all()
+
+class Hello(APIView):
+    permission_classes = [
+        AllowAny,
+    ]
+    def get(self,request):
+        return Response({'angular is not working':'ERROR PLEASE Rescue Angular'})
