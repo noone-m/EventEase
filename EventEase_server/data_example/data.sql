@@ -663,6 +663,18 @@ COPY public.photos_mainfoodphoto (id, food_id, "foodPhoto_id") FROM stdin;
 --
 
 COPY public.photos_servicephotos (id, image, uploaded_at, service_id) FROM stdin;
+1	pictures/services/hartna.png	2024-07-27 18:44:04.27609+03	1
+2	pictures/services/hartna2.png	2024-07-27 18:44:17.975629+03	1
+3	pictures/services/expan.PNG	2024-07-27 18:46:42.81339+03	7
+4	pictures/services/hartna2_bcNeSBq.jpg	2024-07-27 18:46:58.715853+03	7
+5	pictures/services/hartna2_CTx2aDV.jpg	2024-07-27 18:48:12.159115+03	8
+6	pictures/services/dara.png	2024-07-27 18:48:20.717822+03	8
+7	pictures/services/dara_xlh5uCF.png	2024-07-27 18:49:37.62727+03	9
+8	pictures/services/WIN_20211219_00_31_04_Pro.jpg	2024-07-27 18:50:03.4617+03	9
+9	pictures/services/WIN_20211219_00_31_04_Pro_v84ITKf.jpg	2024-07-27 19:02:03.563002+03	8
+10	pictures/services/nurikabe.PNG	2024-07-27 19:02:17.227442+03	8
+11	pictures/services/happy.jpg	2024-07-27 19:02:35.39792+03	8
+12	pictures/services/dog5.png	2024-07-27 19:02:53.046709+03	8
 \.
 
 
@@ -671,6 +683,10 @@ COPY public.photos_servicephotos (id, image, uploaded_at, service_id) FROM stdin
 --
 
 COPY public.photos_serviceprofilephoto (id, service_id, "servicePhoto_id") FROM stdin;
+1	9	1
+2	8	2
+3	7	2
+4	1	2
 \.
 
 
@@ -698,6 +714,7 @@ COPY public.reports_reportreview (id, reason, is_solved, reporter_id, review_id,
 --
 
 COPY public.reports_reportservice (id, reason, evidence, resolution, is_solved, created_at, updated_at, reporter_id, service_id, solved_by_id) FROM stdin;
+1	they are liars	storage/reports/evidence/cat2.png	I want my money back	t	2024-07-27 09:44:47.423557+03	2024-07-27 09:47:08.586898+03	3	9	1
 \.
 
 
@@ -993,14 +1010,14 @@ SELECT pg_catalog.setval('public.photos_mainfoodphoto_id_seq', 1, true);
 -- Name: photos_servicephotos_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.photos_servicephotos_id_seq', 1, false);
+SELECT pg_catalog.setval('public.photos_servicephotos_id_seq', 12, true);
 
 
 --
 -- Name: photos_serviceprofilephoto_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.photos_serviceprofilephoto_id_seq', 1, false);
+SELECT pg_catalog.setval('public.photos_serviceprofilephoto_id_seq', 4, true);
 
 
 --
@@ -1014,7 +1031,7 @@ SELECT pg_catalog.setval('public.reports_reportreview_id_seq', 7, true);
 -- Name: reports_reportservice_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.reports_reportservice_id_seq', 1, false);
+SELECT pg_catalog.setval('public.reports_reportservice_id_seq', 1, true);
 
 
 --
