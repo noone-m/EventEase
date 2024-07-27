@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'reports',
     'wallet',
     'corsheaders',
+    'channels',
     # 'django_filter',
 ]
 

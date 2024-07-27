@@ -22,7 +22,8 @@ Decor,DecorEventType)
 from .serializers import (FoodServiceSerializer, ServiceTypeSerializer, ServiceProviderApplicationSerializer,
 FavoriteServiceSerializer, ServiceSerializer, DJServiceSerializer, FoodTypeSerializer, FoodTypeServiceSerializer,
 FoodSerializer, FoodServiceFoodSerializer, VenueSerializer, PhotoGrapherServiceSerializer
-,EntertainementServiceSerializer, DecorationServiceSerializer, DecorSerializer,DecorEventTypeListSerializer
+,EntertainementServiceSerializer, DecorationServiceSerializer, DecorSerializer,DecorEventTypeListSerializer,
+MyServiceTypeSerializer
 )
 
 
@@ -302,6 +303,17 @@ class MyServiceAPIView(APIView):
         print(serializer)
         serializer = serializer(service)
         return Response(serializer.data,status=status.HTTP_200_OK)
+
+class MyServiceTypeAPIView(APIView):
+
+    def get(self,requset,**kwargs):
+        user = requset.user
+        service = Service.objects.filter(service_provider = user).first()
+        serializer = MyServiceTypeSerializer({'service_id': service.id,
+                                               'type' : service.service_type.type,
+                                               'type_id': service.service_type.id} )
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    
 
 class FoodTypeAPIView(APIView):
 

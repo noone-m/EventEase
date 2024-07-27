@@ -1,7 +1,8 @@
 from django.urls import path,include
 from .views import (FoodServiceViewSet,ServiceTypeViewSet,ServiceProviderApplicationView,ApproveApplication,
 ServiceViewSet,DeclineApplication,ServiceProviderApplicationDetailView,FoodTypeAPIView,
-DeleteRetrieveFoodTypeAPIView,FoodAPIView,LocationDetailView,DecorAPIView,MyServiceAPIView)
+DeleteRetrieveFoodTypeAPIView,FoodAPIView,LocationDetailView,DecorAPIView,MyServiceAPIView,
+MyServiceTypeAPIView)
 
 from photos.views import (ServicePhotosAPIView,ServiceProfilePhotoAPIView,FoodPhotosAPIView,MainFoodPhotoAPIView
 ,DecorPhotosAPIView,MainDecorPhotoAPIView)
@@ -29,7 +30,10 @@ urlpatterns = [
     path('applications/<int:pk>/',ServiceProviderApplicationDetailView.as_view()),
     path('applications/<int:pk>/approve/',ApproveApplication.as_view()),
     path('applications/<int:pk>/decline/',DeclineApplication.as_view()),
+
     path('my-service/',MyServiceAPIView.as_view()),
+    path('my-service/type',MyServiceTypeAPIView.as_view()),
+
     path('<int:service_pk>/photos/',ServicePhotosAPIView.as_view()),
     path('<int:service_pk>/location/',LocationDetailView.as_view()),
     path('<int:service_pk>/photos/<int:photo_pk>/',ServicePhotosAPIView.as_view()),

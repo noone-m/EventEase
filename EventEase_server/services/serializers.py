@@ -6,7 +6,7 @@ from accounts.serializers import AdminUserSerializer
 from photos.serializers import ServicePhotosSerializers
 from .models import (FoodService, ServiceType, ServiceProviderApplication, FavoriteService, Service, DJService, Food
 , FoodType, FoodTypeService, FoodServiceFood, Venue, PhotoGrapherService, EntertainementService, Decor,
-DecorEventType)
+DecorEventType,DecorationService)
 from rest_framework import serializers
 
 
@@ -133,7 +133,7 @@ class DecorationServiceSerializer(serializers.ModelSerializer):
     service_type = ServiceTypeSerializer(read_only=True)
     location = LocationSerializer(read_only=True)
     class Meta:
-        model = EntertainementService
+        model = DecorationService
         fields = '__all__'
 
 class DecorEventTypeSerializer(serializers.ModelSerializer):
@@ -159,3 +159,7 @@ class DecorSerializer(serializers.ModelSerializer):
         return DecorEventTypeSerializer(decor_event_types, many=True).data
     
 
+class MyServiceTypeSerializer(serializers.Serializer):
+    service_id = serializers.IntegerField(read_only = True)
+    type_id = serializers.IntegerField(read_only = True)
+    type = serializers.StringRelatedField(read_only = True)
