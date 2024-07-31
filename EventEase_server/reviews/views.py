@@ -5,11 +5,12 @@ from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.exceptions import ValidationError
-from accounts.permissions import IsOwnerOrAdminUser
+from accounts.permissions import IsOwnerOrAdminUser,DefaultOrIsAdminUser
 from .models import Review, Service
 from .serializers import ReviewSerializer
 
 class ReviewListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = [DefaultOrIsAdminUser]
     serializer_class = ReviewSerializer
 
     def get_queryset(self):

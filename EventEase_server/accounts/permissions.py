@@ -88,9 +88,4 @@ class IsServiceOwnerOrAdmin(BasePermission):
     
 class DefaultOrIsAdminUser(BasePermission):
     def has_permission(self, request, view):
-        # Check if the user has the default permissions
-        default_permissions = [permission() for permission in view.permission_classes]
-        if all(permission.has_permission(request, view) for permission in default_permissions):
-            return True
-        # If not, check if the user is an admin
-        return IsAdminUser().has_permission(request, view)
+        return IsAdminUser().has_permission(request, view) or IsEmailVerified().has_permission(request, view) and IsPhoneVerified().has_permission(request, view)
