@@ -60,7 +60,7 @@ class ServicePhotosAPIView(APIView):
 class ServiceProfilePhotoAPIView(APIView):
     def get(self, request, service_pk):
         service = get_object_or_404(Service,id = service_pk)
-        profile_photo = ServiceProfilePhoto.objects.get(service = service)
+        profile_photo = get_object_or_404(ServiceProfilePhoto,service = service)
         serializer = ServiceProfilePhotoSerialzer(profile_photo)
         return Response(serializer.data)
 
@@ -75,25 +75,35 @@ class ServiceProfilePhotoAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def put(self, request, service_pk):
-        service = get_object_or_404(Service, id = service_pk)
-        profile_photo = ServiceProfilePhoto.objects.get(service = service)
-        serializer = ServiceProfilePhotoSerialzer(profile_photo, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # def put(self, request, service_pk):
+    #     service = get_object_or_404(Service, id = service_pk)
+    #     profile_photo = ServiceProfilePhoto.objects.get(service = service)
+    #     serializer = ServiceProfilePhotoSerialzer(profile_photo, data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save()
+    #         return Response(serializer.data)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    def delete(self):
-        # I will not implement delete here becauese we can just delete the photo
-        # using DeleteServicePhotosAPIView and that in return will delete the 
-        # whole record in data base
-        pass
+    def delete(self,request,service_pk):
+        print('delete')
+        service = get_object_or_404(Service,id = service_pk )
+        photo = get_object_or_404(ServiceProfilePhoto,service = service) 
+        image_path = photo.servicePhoto
+        image_path = str(image_path)
+        try:
+            full_image_path = os.path.join(settings.MEDIA_ROOT,image_path)
+            print(full_image_path)
+            os.remove(full_image_path)
+        except FileNotFoundError:
+            pass
+        photo.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT) 
+    
 
     def get_permissions(self):
         if self.request.method == 'GET':
             return [IsAuthenticated()]
-        elif self.request.method in ['POST','PUT']:
+        elif self.request.method in ['POST','PUT','DELETE']:
             return [IsServiceOwnerOrAdmin()] 
         
 

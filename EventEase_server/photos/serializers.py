@@ -15,12 +15,12 @@ class ServiceProfilePhotoSerialzer(serializers.ModelSerializer):
     class Meta:
         model = ServiceProfilePhoto
         fields = ['service', 'profile_photo_url', 'servicePhoto']
-        read_only_fields = ['service']
+        read_only_fields = ['service','profile_photo_url']
 
     def get_profile_photo_url(self, obj):
+        print(obj)
         photo = obj.servicePhoto
-        serializer = ServicePhotosSerializers(photo)
-        return serializer.data['image']
+        return "/media/" + str(photo)
     
 
 class FoodPhotosSerializers(serializers.ModelSerializer):

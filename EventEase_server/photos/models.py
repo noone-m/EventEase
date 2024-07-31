@@ -20,7 +20,7 @@ class FoodPhotos(models.Model):
 
 class ServiceProfilePhoto(models.Model):
     service = models.OneToOneField(Service,on_delete= models.CASCADE)
-    servicePhoto = models.ForeignKey(ServicePhotos,on_delete=models.CASCADE)
+    servicePhoto = models.ImageField(upload_to='pictures/services/profile_photos')
     
 
 class MainFoodPhoto(models.Model):
