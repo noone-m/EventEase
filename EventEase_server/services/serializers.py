@@ -163,3 +163,4 @@ class MyServiceTypeSerializer(serializers.Serializer):
     service_id = serializers.IntegerField(read_only = True)
     type_id = serializers.IntegerField(read_only = True)
     type = serializers.StringRelatedField(read_only = True)
+    avg_rating = serializers.FloatField(read_only = True)

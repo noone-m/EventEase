@@ -227,4 +227,3 @@ class ListEmailVerified(ListAPIView):
     permission_classes = [IsAdminUser,]
     serializer_class = EmailVerifiedSerializer
     queryset = EmailVerified.objects.all()
-

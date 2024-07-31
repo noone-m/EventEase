@@ -11,6 +11,8 @@ from locations.views import AddressViewSet,LocationViewSet
 
 from reports.views import ReportReviewAPIView,SolveReportReviewAPIView,ReportServiceAPIView,SolveReportServiceAPIView
 
+from videos.views import VideoListCreateAPIView,VideoRetrieveDestroyAPIView
+
 from reviews.views import ReviewListCreateAPIView,ReviewUpdateDestroyAPIView
 from rest_framework.routers import DefaultRouter
 
@@ -61,5 +63,8 @@ urlpatterns = [
     path('<int:service_pk>/reports/', ReportServiceAPIView.as_view()),
     path('<int:service_pk>/reports/<int:report_pk>/', ReportServiceAPIView.as_view()),
     path('<int:service_pk>/reports/<int:report_pk>/solve/',SolveReportServiceAPIView.as_view()),
+
+    path('<int:service_pk>/videos/',VideoListCreateAPIView.as_view()),   
+    path('<int:service_pk>/videos/<int:video_pk>/',VideoRetrieveDestroyAPIView.as_view()),  
     path('',include(router.urls)),
 ] 

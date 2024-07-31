@@ -311,7 +311,8 @@ class MyServiceTypeAPIView(APIView):
         service = Service.objects.filter(service_provider = user).first()
         serializer = MyServiceTypeSerializer({'service_id': service.id,
                                                'type' : service.service_type.type,
-                                               'type_id': service.service_type.id} )
+                                               'type_id': service.service_type.id,
+                                               'avg_rating':service.avg_rating} )
         return Response(serializer.data,status=status.HTTP_200_OK)
     
 
