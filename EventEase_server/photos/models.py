@@ -21,7 +21,7 @@ class FoodPhotos(models.Model):
 class ServiceProfilePhoto(models.Model):
     service = models.OneToOneField(Service,on_delete= models.CASCADE)
     servicePhoto = models.ForeignKey(ServicePhotos,on_delete=models.CASCADE)
-
+    
 
 class MainFoodPhoto(models.Model):
     food = models.OneToOneField(Food, on_delete = models.CASCADE)
