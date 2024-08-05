@@ -9,6 +9,8 @@ from datetime import timedelta
 from rest_framework.authtoken.models import Token
 from services.models import Service
 
+from wallet.models import UserWallet
+
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
@@ -99,6 +101,13 @@ class User(AbstractBaseUser, PermissionsMixin):
     EMAIL_FIELD = "email"
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name","last_name","phone","password"]
+
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'
+
+    def get_wallet(self):
+        return UserWallet.objects.get(user = self)
+    
 
 
 class OTP(models.Model):

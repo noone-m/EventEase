@@ -11,6 +11,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.authtoken.models import Token
+
+from wallet.models import UserWallet
+
 from services.models import FoodService
 from .serializers import(TokenSerializer,RegisterSerializer,OTPSerializer,AdminUserSerializer,
 ChangePasswordRequestedSerialzer, ChangePasswordRequestsSerializer, UpdatePasswordSerializer,
@@ -64,6 +67,8 @@ class Register(APIView):
         if serializer.is_valid():
             user = serializer.save()
             token ,created= Token.objects.get_or_create(user=user)
+            wallet = UserWallet.objects.create(user=user)
+            wallet.save()
             return Response({'Token': token.key},status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     

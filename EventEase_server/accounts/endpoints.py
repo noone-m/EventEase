@@ -2,7 +2,11 @@ from django.urls import path,include
 from .views import (Login,log_out,Register,UserViewSet,VerifyOTP,GenerateOTP,ListOTP,DestroyOTP,
 ChangePasswordRequested, ChangePassowrdRequests, UpdatePassword,VerifyEmail,GenerateVerificationLink,
 ListEmailVerified)
+
 from services.views import UserFavoriteServices
+
+from wallet.views import RetrieveWalletAPIView,RetrieveMyWalletAPIView,DebitWalletView,CreditWalletView,TransactionsAPIView
+
 from rest_framework.routers import DefaultRouter
 
 
@@ -24,6 +28,13 @@ urlpatterns = [
     path('verification-link', GenerateVerificationLink.as_view()),
     path('verify-email/', VerifyEmail.as_view()),
     path('list-verification-tokens/', ListEmailVerified.as_view()),
+
+    path('my-wallet/', RetrieveMyWalletAPIView.as_view()),
+    path('my-wallet/credit/', CreditWalletView.as_view()),
+    path('my-wallet/debit/', DebitWalletView.as_view()),
+    path('users/<int:user_id>/wallet/', RetrieveWalletAPIView.as_view()),
+
+    path('transactions/', TransactionsAPIView.as_view()),
 
     path('',include(router.urls)),
 ] 

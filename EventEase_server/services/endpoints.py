@@ -2,7 +2,7 @@ from django.urls import path,include
 from .views import (FoodServiceViewSet,ServiceTypeViewSet,ServiceProviderApplicationView,ApproveApplication,
 ServiceViewSet,DeclineApplication,ServiceProviderApplicationDetailView,FoodTypeAPIView,
 DeleteRetrieveFoodTypeAPIView,FoodAPIView,LocationDetailView,DecorAPIView,MyServiceAPIView,
-MyServiceTypeAPIView)
+MyServiceTypeAPIView, ServiceReservationAPIView,RejectServiceReservationAPIView,ListRetrieveFoodAPIView)
 
 from photos.views import (ServicePhotosAPIView,ServiceProfilePhotoAPIView,FoodPhotosAPIView,MainFoodPhotoAPIView
 ,DecorPhotosAPIView,MainDecorPhotoAPIView)
@@ -41,6 +41,7 @@ urlpatterns = [
     path('<int:service_pk>/photos/<int:photo_pk>/',ServicePhotosAPIView.as_view()),
     path('<int:service_pk>/profile-photo/',ServiceProfilePhotoAPIView.as_view()),
 
+    
     path('<int:service_pk>/food-type/',FoodTypeAPIView.as_view()),
     path('<int:service_pk>/food-type/<int:type_pk>/',DeleteRetrieveFoodTypeAPIView.as_view()),
     path('<int:service_pk>/food-type/<int:type_pk>/food/', FoodAPIView.as_view(), name='food-list-create'),
@@ -48,6 +49,9 @@ urlpatterns = [
     path('<int:service_pk>/food-type/<int:type_pk>/food/<int:food_pk>/photos/', FoodPhotosAPIView.as_view(), name='food-list-create'),
     path('<int:service_pk>/food-type/<int:type_pk>/food/<int:food_pk>/photos/<int:photo_pk>/', FoodPhotosAPIView.as_view()),
     path('<int:service_pk>/food-type/<int:type_pk>/food/<int:food_pk>/photos/main/', MainFoodPhotoAPIView.as_view()),
+    path('<int:service_pk>/food/',ListRetrieveFoodAPIView.as_view()),
+    path('<int:service_pk>/food/<int:food_pk>/',ListRetrieveFoodAPIView.as_view()),
+
 
     path('<int:service_pk>/decors/', DecorAPIView.as_view()),
     path('<int:service_pk>/decors/<int:decor_pk>/', DecorAPIView.as_view()),
@@ -65,6 +69,11 @@ urlpatterns = [
     path('<int:service_pk>/reports/<int:report_pk>/solve/',SolveReportServiceAPIView.as_view()),
 
     path('<int:service_pk>/videos/',VideoListCreateAPIView.as_view()),   
-    path('<int:service_pk>/videos/<int:video_pk>/',VideoRetrieveDestroyAPIView.as_view()),  
+    path('<int:service_pk>/videos/<int:video_pk>/',VideoRetrieveDestroyAPIView.as_view()), 
+
+    path('<int:service_pk>/reservations/',ServiceReservationAPIView.as_view()), 
+    path('<int:service_pk>/reservations/<int:reservation_pk>/',ServiceReservationAPIView.as_view()), 
+    path('<int:service_pk>/reservations/<int:reservation_pk>/reject/',RejectServiceReservationAPIView.as_view()), 
+    
     path('',include(router.urls)),
 ] 

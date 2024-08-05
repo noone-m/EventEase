@@ -4,7 +4,7 @@ from locations.serializers import LocationSerializer,AddressSerializer
 from events.serializers import EventTypeSerializer
 from accounts.serializers import AdminUserSerializer
 from photos.serializers import ServicePhotosSerializers
-from .models import (FoodService, ServiceType, ServiceProviderApplication, FavoriteService, Service, DJService, Food
+from .models import (FoodService, ServiceReservation, ServiceType, ServiceProviderApplication, FavoriteService, Service, DJService, Food
 , FoodType, FoodTypeService, FoodServiceFood, Venue, PhotoGrapherService, EntertainementService, Decor,
 DecorEventType,DecorationService)
 from rest_framework import serializers
@@ -83,15 +83,17 @@ class FoodTypeSerializer(serializers.ModelSerializer):
 
 
 class FoodTypeServiceSerializer(serializers.ModelSerializer):
+    foodType = FoodTypeSerializer(read_only =True)
     class Meta:
         model = FoodTypeService
-        fields = '__all__'
+        fields = ['foodType','foodService']
 
 
 class FoodSerializer(serializers.ModelSerializer):
     class Meta:
         model = Food
         fields = ['id', 'food_type', 'name', 'price', 'ingredients']
+        read_only_fields = ['id','food_type']
 
 class FoodServiceFoodSerializer(serializers.ModelSerializer):
     food = FoodSerializer()
@@ -164,3 +166,10 @@ class MyServiceTypeSerializer(serializers.Serializer):
     type_id = serializers.IntegerField(read_only = True)
     type = serializers.StringRelatedField(read_only = True)
     avg_rating = serializers.FloatField(read_only = True)
+
+
+class ServiceReservationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceReservation
+        fields = '__all__'
+        read_only_fields = ['id', 'service', 'cost', 'status']
