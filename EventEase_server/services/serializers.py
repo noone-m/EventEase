@@ -100,7 +100,7 @@ class FoodServiceFoodSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FoodServiceFood
-        fields = ['id', 'foodService', 'food']
+        fields = ['foodService', 'food']
 
 class VenueSerializer(serializers.ModelSerializer):
     service_provider = AdminUserSerializer(read_only=True)

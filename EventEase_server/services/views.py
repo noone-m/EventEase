@@ -436,12 +436,16 @@ class FoodAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, service_pk,type_pk = None, food_pk=None, **kwargs):
-        if food_pk:
-            food = get_object_or_404(Food,id = food_pk)
-            serializer = FoodSerializer(food)
-            return Response(serializer.data, status=status.HTTP_200_OK)            
         service = get_object_or_404(FoodService, id=service_pk)
         food_type = get_object_or_404(FoodType, id=type_pk)
+        if food_pk:
+            food = get_object_or_404(Food,id = food_pk)
+            try:
+                food = FoodServiceFood.objects.get(foodService=service,food__food_type=food_type,food=food)
+            except FoodServiceFood.DoesNotExist:
+                return Response({'message':'the service do not have such food'},status=400)
+            serializer = FoodServiceFoodSerializer(food)
+            return Response(serializer.data, status=status.HTTP_200_OK)            
         foods = FoodServiceFood.objects.filter(foodService=service,food__food_type=food_type)
         serializer = FoodServiceFoodSerializer(foods, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -470,7 +474,7 @@ class ListRetrieveFoodAPIView(APIView):
                 food = FoodServiceFood.objects.get(foodService=service,food = food)
             except FoodServiceFood.DoesNotExist:
                 return Response({'message':'this service does not have such food'},status=404)
-            serializer = FoodSerializer(food)
+            serializer = FoodServiceFoodSerializer(food)
             return Response(serializer.data, status=status.HTTP_200_OK)         
         foods = FoodServiceFood.objects.filter(foodService=service)
         if food_type_ids:
@@ -522,13 +526,12 @@ class DecorAPIView(APIView):
     
     def get(self, request, service_pk, decor_pk=None, **kwargs):
         event_type_ids = request.query_params.getlist('event_type')
-
+        service = get_object_or_404(DecorationService, id=service_pk)
         if decor_pk:
-            decor = get_object_or_404(Decor, id=decor_pk)
+            decor = get_object_or_404(Decor, id=decor_pk, decor_service = service)
             serializer = DecorSerializer(decor)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
-        service = get_object_or_404(DecorationService, id=service_pk)
         decors = Decor.objects.filter(decor_service=service)
 
         if event_type_ids:
