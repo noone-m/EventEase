@@ -27,6 +27,10 @@ COPY public.accounts_user (id, password, last_login, first_name, last_name, emai
 4	pbkdf2_sha256$720000$exy964qDJRH3nWbktEeNsG$rmfNFdAU/Zbqd3Rtcp/d9zSvMPF9HdVRiWX+7e2wo8A=	\N	abo jood	sobh	abojood@gmail.com	+963935925081	t	t	2024-07-15 16:01:10.385144+03	f
 6	pbkdf2_sha256$720000$P6vUnML3m5rPO5GouWIYCR$TP2iOF+eD+OsNCwDYfIWkMUjOwrjmh33lj64fr/OeTo=	\N	kinan	jbai	kinan@gmail.com	+9639345124552	f	t	2024-07-23 17:16:59.042973+03	f
 5	pbkdf2_sha256$720000$FFKHwjGerymDOpFvvnEhB8$Fny2ivTsQEKh+bHYhh8CvN3bhmzekXVM3Bav2DDqVX8=	\N	aws	alsaad	aws@gmail.com	+963934534651	t	t	2024-07-23 15:40:40.222352+03	f
+7	pbkdf2_sha256$720000$gSRIL4sbeGBghBvgp9oM8o$/5fDRx/yLmvHXa4BMFdFWm8QFVasKwU7naOV+HTD0/Q=	\N	maya	abo amad	maya@gmail.com	0934145962	f	t	2024-07-31 16:14:57.254738+03	f
+8	pbkdf2_sha256$720000$4cKTXWClwohY9NXcpiVlOo$YbGSn6MX2sybA/jFrF6EV4glifUj4M7aTUVq465HsVQ=	\N	sakher	hatoum	shaker@gmail.com	+963934984651	f	t	2024-08-02 18:53:55.577277+03	f
+9	pbkdf2_sha256$720000$bXum5pLIgh9DWTU0yPitqU$7HtY2znkqDmtgPntTw/GA3bofmo73beWvLZRwasY9B0=	\N	amer	hilal	amer@gmail.com	+963934454650	f	t	2024-08-02 19:01:47.666272+03	f
+10	pbkdf2_sha256$720000$Gb7wwwKAVptjA0zLmuR7AT$DB7O501mKobZ/+qq85SJN2IdP8UaIa/NsOWLaIeuz9o=	\N	bashar	ballan	bashar@gmail.com	+963000454650	f	t	2024-08-03 20:55:37.3013+03	f
 \.
 
 
@@ -39,6 +43,8 @@ COPY public.accounts_emailverified (id, is_verified, verification_date, verficat
 2	t	2024-07-15 16:01:11.78035+03	9lQs_kCEizDdJzsiIFRht-ETipb8grxXNyQxcKJrLg_smnne_Whk5LAllbbr9FnNMBUrDdQ1rqenG7VaYbD9xw	3	2024-07-15 16:02:11.863299+03
 3	t	2024-07-23 15:45:58.059082+03	Dj6qByKVC1KWcdeqpZtaZUM8eaOYIBGEgc-XHy-7QCdobH6sM_tLoOFsLxvtP4mq-u3_Sgkz-QrIe5_7XX3axQ	4	2024-07-23 15:51:17.288014+03
 4	t	2024-07-23 17:19:11.883182+03	PsCt1TFCSnW_lBtM6ifBcR4xmHIrcFAPq1vQ9iJlZPlhEVQXXGGHBYwIkL4iaVkF2OotFHhEDZMTWhlk5DIqUg	5	2024-07-23 17:34:30.01302+03
+5	t	2024-08-02 18:47:06.161532+03	vy4l-_xdk_oziFOBusUiHTqkP8yhTGX2CsPV1htBIgMXsbpOr9tOVRQKoY1I8Z8NWX-CkpYau82HAmXf6gA-Rw	6	2024-08-02 18:51:11.242578+03
+6	t	2024-08-02 19:02:38.254183+03	cprcfKBhouGQCYZ-3zyb_mBF-xxd-1zjQZtVvSls-1qEgAPllOxx6CDMqFUdetqjBcKS_ZEsAcLopUqn9WkEgg	7	2024-08-02 19:05:22.902352+03
 \.
 
 
@@ -51,6 +57,14 @@ COPY public.locations_address (id, street, village_city, state, country) FROM st
 2	\N	Al-Tal	Rif Dimashq Governorate	Syria
 3	Mohammad Al-Hamazani Lane	Barza Municipality	Damascus Governorate	Syria
 4	\N	Al Mulayhah	Rif Dimashq Governorate	Syria
+5	\N	Ad Dimas	Rif Dimashq Governorate	Syria
+6	\N	Manīn	Rif Dimashq Governorate	Syria
+7	\N	Rakhlah	Rif Dimashq Governorate	Syria
+8	\N	Ayha	Beqaa Governorate	Lebanon
+9	\N	Mhaidse	Beqaa Governorate	Lebanon
+10	\N	Rashaya	Beqaa Governorate	Lebanon
+11	\N	Biyad	Rif Dimashq Governorate	Syria
+12	\N	`Assal al Ward	Rif Dimashq Governorate	Syria
 \.
 
 
@@ -63,6 +77,14 @@ COPY public.locations_location (id, latitude, longitude, address_id) FROM stdin;
 2	33.590350000	36.379920000	2
 3	33.552350000	36.309920000	3
 4	33.490350000	36.379920000	4
+5	33.590350000	36.079920000	5
+6	33.690350000	36.279920000	6
+7	33.490350000	35.979920000	7
+8	33.480350000	35.919920000	8
+9	33.550350000	35.819920000	9
+10	33.450350000	35.899200000	10
+11	33.450350000	36.399200000	11
+12	33.850350000	36.399200000	12
 \.
 
 
@@ -86,9 +108,9 @@ COPY public.services_servicetype (id, type) FROM stdin;
 
 COPY public.services_service (id, name, description, service_provider_id, service_type_id, created_at, location_id, phone, updated_at, avg_rating) FROM stdin;
 1	Grilling master	\N	2	1	2024-07-15 16:01:13.705117+03	1	+963947741054	2024-07-15 16:01:13.709114+03	0
-7	DJ Malik	\N	3	2	2024-07-23 14:06:36.062094+03	2	963947741054	2024-07-23 14:17:38.43306+03	0
-8	Zvenue	\N	4	3	2024-07-23 15:54:16.928996+03	3	963947741054	2024-07-23 16:09:36.31771+03	0
-9	Aws Forniture	\N	5	7	2024-07-23 17:42:25.151898+03	4	+963924574105	2024-07-25 19:16:38.137688+03	4.5
+7	DJ Malik	\N	3	2	2024-07-23 14:06:36.062094+03	2	963947741054	2024-07-31 20:19:36.470802+03	0
+8	zvenue	\N	4	3	2024-07-23 15:54:16.928996+03	3	963947741054	2024-08-04 19:30:59.966343+03	0
+9	Aws Forniture	\N	5	7	2024-07-23 17:42:25.151898+03	4	+963924574105	2024-08-05 14:56:24.799014+03	4.5
 \.
 
 
@@ -101,6 +123,8 @@ COPY public.accounts_otp (id, code, expire_date, is_verified, service_id, user_i
 2	914754	2024-07-15 16:02:11.404418+03	t	\N	3
 3	798162	2024-07-23 15:45:26.257187+03	t	\N	4
 4	324290	2024-07-23 17:19:40.001505+03	t	\N	5
+5	242805	2024-08-02 18:51:17.452882+03	t	\N	6
+6	270894	2024-08-02 19:05:13.331597+03	t	\N	7
 \.
 
 
@@ -182,6 +206,15 @@ COPY public.django_content_type (id, app_label, model) FROM stdin;
 47	photos	decorphotos
 48	photos	maindecorphoto
 49	services	decor
+50	services	decorsreservation
+51	services	decorsinreservation
+52	services	order
+53	services	foodinorder
+54	services	decorinorder
+55	services	servicereservation
+56	wallet	centerwallet
+57	services	reservation
+58	wallet	userwallet
 \.
 
 
@@ -390,6 +423,42 @@ COPY public.auth_permission (id, name, content_type_id, codename) FROM stdin;
 198	Can change decor	49	change_decor
 199	Can delete decor	49	delete_decor
 200	Can view decor	49	view_decor
+201	Can add decors reservation	50	add_decorsreservation
+202	Can change decors reservation	50	change_decorsreservation
+203	Can delete decors reservation	50	delete_decorsreservation
+204	Can view decors reservation	50	view_decorsreservation
+205	Can add decors in reservation	51	add_decorsinreservation
+206	Can change decors in reservation	51	change_decorsinreservation
+207	Can delete decors in reservation	51	delete_decorsinreservation
+208	Can view decors in reservation	51	view_decorsinreservation
+209	Can add order	52	add_order
+210	Can change order	52	change_order
+211	Can delete order	52	delete_order
+212	Can view order	52	view_order
+213	Can add food in order	53	add_foodinorder
+214	Can change food in order	53	change_foodinorder
+215	Can delete food in order	53	delete_foodinorder
+216	Can view food in order	53	view_foodinorder
+217	Can add decor in order	54	add_decorinorder
+218	Can change decor in order	54	change_decorinorder
+219	Can delete decor in order	54	delete_decorinorder
+220	Can view decor in order	54	view_decorinorder
+221	Can add service reservation	55	add_servicereservation
+222	Can change service reservation	55	change_servicereservation
+223	Can delete service reservation	55	delete_servicereservation
+224	Can view service reservation	55	view_servicereservation
+225	Can add center wallet	56	add_centerwallet
+226	Can change center wallet	56	change_centerwallet
+227	Can delete center wallet	56	delete_centerwallet
+228	Can view center wallet	56	view_centerwallet
+229	Can add reservation	57	add_reservation
+230	Can change reservation	57	change_reservation
+231	Can delete reservation	57	delete_reservation
+232	Can view reservation	57	view_reservation
+233	Can add user wallet	58	add_userwallet
+234	Can change user wallet	58	change_userwallet
+235	Can delete user wallet	58	delete_userwallet
+236	Can view user wallet	58	view_userwallet
 \.
 
 
@@ -420,6 +489,10 @@ ce42baa06b3a4a474c9d8619fe0ac636a9602e25	2024-07-15 16:01:10.308194+03	3
 bf9d8f623cc7f0632b20ac43d9a59a4168d423be	2024-07-15 16:01:11.029742+03	4
 6181814cdb093c058ff6d09cf5e2656ab5701698	2024-07-23 15:40:41.033238+03	5
 3b145318b39365778e19dabea6fb163ca8c5e09d	2024-07-23 17:16:59.826998+03	6
+a006bfab0f320ee3662aaf92e3a325132c36b915	2024-07-31 16:14:58.014898+03	7
+a4b605a455bcb5417772c0aafc498775cbcfd996	2024-08-02 18:53:56.30542+03	8
+e587c41e5aaaf6034921ebd11e2385c4d5d6909a	2024-08-02 19:01:48.394568+03	9
+db733ba2e8c18b4d5846836bbc1377a61f05a22f	2024-08-03 20:55:38.050291+03	10
 \.
 
 
@@ -518,6 +591,22 @@ COPY public.django_migrations (id, app, name, applied) FROM stdin;
 81	services	0022_service_avg_rating	2024-07-25 18:35:27.081005+03
 82	reviews	0003_review_updated_at_alter_review_service	2024-07-25 18:35:27.212951+03
 83	reviews	0004_review_unique_user_service	2024-07-25 18:50:12.48466+03
+84	videos	0002_remove_video_description_remove_video_title	2024-07-31 09:37:18.341653+03
+85	reports	0002_alter_reportservice_evidence	2024-07-31 16:09:33.305956+03
+86	wallet	0002_remove_wallet_currency_alter_wallet_balance	2024-07-31 16:09:33.890027+03
+87	photos	0010_remove_serviceprofilephoto_servicephoto_and_more	2024-07-31 16:59:30.902448+03
+88	photos	0011_rename_image_serviceprofilephoto_servicephoto	2024-07-31 17:06:12.981837+03
+89	wallet	0003_remove_transaction_timestamp_and_more	2024-08-01 00:18:03.234039+03
+90	wallet	0004_transaction_wallet	2024-08-01 09:50:54.703783+03
+91	events	0004_remove_event_other_type_alter_event_total_cost_and_more	2024-08-02 18:42:17.110049+03
+92	services	0023_decorsreservation_decorsinreservation_order_and_more	2024-08-02 18:42:20.800192+03
+93	wallet	0005_centerwallet_transaction_fee_and_more	2024-08-03 13:36:30.233446+03
+94	services	0024_remove_decorsreservation_event_and_more	2024-08-03 18:53:31.404498+03
+95	wallet	0006_transaction_order_transaction_reservation	2024-08-03 18:53:31.810568+03
+96	wallet	0007_remove_wallet_user_remove_centerwallet_balance_and_more	2024-08-03 20:37:50.202222+03
+97	services	0025_reservation_created_at_reservation_updated_at	2024-08-04 09:29:02.834508+03
+98	services	0026_alter_reservation_status	2024-08-04 18:04:45.892786+03
+99	wallet	0008_alter_transaction_transaction_type	2024-08-04 18:04:46.107977+03
 \.
 
 
@@ -548,7 +637,8 @@ COPY public.events_eventtype (id, name) FROM stdin;
 -- Data for Name: events_event; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.events_event (id, name, start_time, end_time, total_cost, location_id, user_id, event_type_id, other_type) FROM stdin;
+COPY public.events_event (id, name, start_time, end_time, total_cost, location_id, user_id, event_type_id) FROM stdin;
+3	ramez graduation party	2024-09-11 23:00:00+03	2024-09-12 01:00:00+03	0.00	12	6	\N
 \.
 
 
@@ -557,14 +647,6 @@ COPY public.events_event (id, name, start_time, end_time, total_cost, location_i
 --
 
 COPY public.events_invitationcard (id, invitation, event_id) FROM stdin;
-\.
-
-
---
--- Data for Name: events_reservation; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.events_reservation (id, start_time, end_time, status, cost, event_id, service_id) FROM stdin;
 \.
 
 
@@ -589,7 +671,7 @@ COPY public.notifications_notification (id, created_at, dest_id, message_id, sou
 --
 
 COPY public.services_decorationservice (service_ptr_id, area_limit_km) FROM stdin;
-9	\N
+9	50
 \.
 
 
@@ -598,8 +680,8 @@ COPY public.services_decorationservice (service_ptr_id, area_limit_km) FROM stdi
 --
 
 COPY public.services_decor (id, name, quantity, available_quantity, hourly_rate, description, decor_service_id, price) FROM stdin;
-6	ballons	10000	10000	0.00	they suit for birthday parties	9	200.00
 7	White candles	1000	1000	0.00		9	10000.00
+6	ballons	10000	10000	0.00	they suit for birthday parties	9	200.00
 \.
 
 
@@ -610,6 +692,9 @@ COPY public.services_decor (id, name, quantity, available_quantity, hourly_rate,
 COPY public.photos_decorphotos (id, image, uploaded_at, decor_id) FROM stdin;
 2	pictures/decors/whtie_candles.png	2024-07-25 13:02:57.427842+03	7
 3	pictures/decors/salmon.jpg	2024-07-25 13:07:07.097983+03	7
+4	pictures/decors/dam.jfif	2024-07-31 12:46:50.141739+03	6
+5	pictures/decors/soltan.jpg	2024-08-05 14:39:52.595247+03	6
+6	pictures/decors/soltan_0LpQRWx.jpg	2024-08-05 14:54:03.907468+03	6
 \.
 
 
@@ -619,6 +704,7 @@ COPY public.photos_decorphotos (id, image, uploaded_at, decor_id) FROM stdin;
 
 COPY public.services_foodtype (id, type) FROM stdin;
 1	sea food
+2	chicken
 \.
 
 
@@ -628,6 +714,10 @@ COPY public.services_foodtype (id, type) FROM stdin;
 
 COPY public.services_food (id, name, price, food_type_id, ingredients) FROM stdin;
 1	salmon	120000	1	
+2	shawarma	35000	1	
+3	grilled fish	35000	1	
+4	fried salmon	50000	1	
+5	broasted	150000	2	
 \.
 
 
@@ -638,6 +728,7 @@ COPY public.services_food (id, name, price, food_type_id, ingredients) FROM stdi
 COPY public.photos_foodphotos (id, image, uploaded_at, food_id) FROM stdin;
 3	pictures/foods/salmon.jpg	2024-07-16 13:10:52.823844+03	1
 4	pictures/foods/salmon2.jpg	2024-07-16 13:28:40.250397+03	1
+6	pictures/foods/soltan.jpg	2024-08-05 13:44:13.439685+03	3
 \.
 
 
@@ -646,6 +737,7 @@ COPY public.photos_foodphotos (id, image, uploaded_at, food_id) FROM stdin;
 --
 
 COPY public.photos_maindecorphoto (id, decor_id, "decorPhoto_id") FROM stdin;
+6	6	5
 \.
 
 
@@ -654,7 +746,8 @@ COPY public.photos_maindecorphoto (id, decor_id, "decorPhoto_id") FROM stdin;
 --
 
 COPY public.photos_mainfoodphoto (id, food_id, "foodPhoto_id") FROM stdin;
-1	1	3
+2	1	4
+5	3	6
 \.
 
 
@@ -682,11 +775,9 @@ COPY public.photos_servicephotos (id, image, uploaded_at, service_id) FROM stdin
 -- Data for Name: photos_serviceprofilephoto; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.photos_serviceprofilephoto (id, service_id, "servicePhoto_id") FROM stdin;
-1	9	1
-2	8	2
-3	7	2
-4	1	2
+COPY public.photos_serviceprofilephoto (id, service_id, "servicePhoto") FROM stdin;
+6	1	pictures/services/profile_photos/dam.jfif
+8	9	pictures/services/profile_photos/dam_vrrmwJI.jfif
 \.
 
 
@@ -719,18 +810,55 @@ COPY public.reports_reportservice (id, reason, evidence, resolution, is_solved, 
 
 
 --
--- Data for Name: services_booking; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.services_booking (id, date, start_time, end_time, service_id, user_id) FROM stdin;
-\.
-
-
---
 -- Data for Name: services_decoreventtype; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.services_decoreventtype (id, event_type_id, decor_id) FROM stdin;
+5	2	6
+6	3	6
+\.
+
+
+--
+-- Data for Name: services_order; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.services_order (id, status, total_price, event_id, service_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: services_decorinorder; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.services_decorinorder (id, quantity, price, decor_id, order_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: services_decorsinreservation; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.services_decorsinreservation (id, quantity, start_time, price, decor_id, decors_reservation_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: services_reservation; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.services_reservation (id, start_time, end_time, status, cost, event_id, created_at, updated_at) FROM stdin;
+6	2024-09-11 23:00:00+03	2024-09-12 00:00:00+03	Rejected	100000.00	3	2024-08-04 18:17:17.371489+03	2024-08-04 18:20:48.111378+03
+7	2024-09-11 23:00:00+03	2024-09-12 00:00:00+03	Rejected	100000.00	3	2024-08-04 18:40:40.843113+03	2024-08-04 18:47:05.419268+03
+8	2024-09-11 23:00:00+03	2024-09-12 00:00:00+03	Rejected	100000.00	3	2024-08-04 18:48:48.200074+03	2024-08-04 18:49:32.08743+03
+\.
+
+
+--
+-- Data for Name: services_decorsreservation; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.services_decorsreservation (decor_service_id, reservation_ptr_id) FROM stdin;
 \.
 
 
@@ -739,7 +867,7 @@ COPY public.services_decoreventtype (id, event_type_id, decor_id) FROM stdin;
 --
 
 COPY public.services_djservice (service_ptr_id, music_genre, equipment_provided, hourly_rate, area_limit_km) FROM stdin;
-7	\N	Drums,Guitars,Piano,Violin	\N	\N
+7	western music	Drums,Guitars,Piano,Violin	\N	\N
 \.
 
 
@@ -760,6 +888,14 @@ COPY public.services_favoriteservice (id, user_id, service_id) FROM stdin;
 
 
 --
+-- Data for Name: services_foodinorder; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.services_foodinorder (id, quantity, price, food_id, order_id) FROM stdin;
+\.
+
+
+--
 -- Data for Name: services_foodservice; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -773,6 +909,9 @@ COPY public.services_foodservice (service_ptr_id, area_limit_km) FROM stdin;
 --
 
 COPY public.services_foodservicefood (id, food_id, "foodService_id") FROM stdin;
+3	3	1
+4	4	1
+5	5	1
 \.
 
 
@@ -782,6 +921,7 @@ COPY public.services_foodservicefood (id, food_id, "foodService_id") FROM stdin;
 
 COPY public.services_foodtypeservice (id, "foodService_id", "foodType_id") FROM stdin;
 2	1	1
+3	1	2
 \.
 
 
@@ -806,11 +946,22 @@ COPY public.services_serviceproviderapplication (id, "otherType", national_ident
 
 
 --
+-- Data for Name: services_servicereservation; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.services_servicereservation (service_id, reservation_ptr_id) FROM stdin;
+8	6
+8	7
+8	8
+\.
+
+
+--
 -- Data for Name: services_venue; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.services_venue (service_ptr_id, hourly_rate, capacity, amenities) FROM stdin;
-8	\N	\N	\N
+8	100000.00	200	\N
 \.
 
 
@@ -818,7 +969,7 @@ COPY public.services_venue (service_ptr_id, hourly_rate, capacity, amenities) FR
 -- Data for Name: videos_video; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.videos_video (id, title, description, file, uploaded_at, service_id) FROM stdin;
+COPY public.videos_video (id, file, uploaded_at, service_id) FROM stdin;
 \.
 
 
@@ -826,7 +977,25 @@ COPY public.videos_video (id, title, description, file, uploaded_at, service_id)
 -- Data for Name: wallet_wallet; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.wallet_wallet (id, balance, currency, created_at, updated_at, user_id) FROM stdin;
+COPY public.wallet_wallet (id, balance, created_at, updated_at) FROM stdin;
+3	0.00	2024-07-31 16:25:19.425802+03	2024-07-31 16:25:24.371767+03
+4	0.00	2024-07-31 16:25:37.956423+03	2024-07-31 16:25:40.416368+03
+5	0.00	2024-07-31 16:25:50.369557+03	2024-07-31 16:25:56.329163+03
+2	3000000.00	2024-07-31 16:23:55.304341+03	2024-08-01 10:00:11.10194+03
+7	0.00	2024-08-02 18:53:56.307738+03	2024-08-02 18:53:56.325296+03
+8	0.00	2024-08-02 19:01:48.397047+03	2024-08-02 19:01:48.399001+03
+9	0.00	2024-08-03 20:55:38.053288+03	2024-08-03 20:55:38.08067+03
+1	0.00	2024-07-31 16:14:58.113705+03	2024-08-04 18:49:32.062157+03
+6	200000.00	2024-07-31 16:26:06.364674+03	2024-08-04 18:49:32.066152+03
+\.
+
+
+--
+-- Data for Name: wallet_centerwallet; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.wallet_centerwallet (wallet_ptr_id) FROM stdin;
+1
 \.
 
 
@@ -834,7 +1003,51 @@ COPY public.wallet_wallet (id, balance, currency, created_at, updated_at, user_i
 -- Data for Name: wallet_transaction; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.wallet_transaction (id, amount, transaction_type, "timestamp", made_at, wallet_id) FROM stdin;
+COPY public.wallet_transaction (id, amount, transaction_type, made_at, receiver_id, sender_id, wallet_id, fee, order_id, reservation_id) FROM stdin;
+1	5000000.00	credit	2024-08-01 09:51:26.816181+03	\N	\N	2	\N	\N	\N
+2	-2000000.00	debit	2024-08-01 10:00:11.103941+03	\N	\N	2	\N	\N	\N
+3	2000000.00	credit	2024-08-03 12:43:18.987136+03	\N	\N	6	\N	\N	\N
+4	-1900000.00	debit	2024-08-03 12:44:12.348694+03	\N	\N	6	\N	\N	\N
+5	100000.00	credit	2024-08-03 19:41:52.094697+03	\N	\N	6	\N	\N	\N
+13	-105000.00	debit	2024-08-03 20:51:26.313294+03	\N	\N	6	\N	\N	\N
+14	105000.00	credit	2024-08-03 20:51:26.324288+03	\N	\N	1	\N	\N	\N
+16	-105000.00	debit	2024-08-04 15:24:55.337663+03	\N	\N	1	\N	\N	\N
+17	105000.00	credit	2024-08-04 15:24:55.343659+03	\N	\N	6	\N	\N	\N
+15	-100000.00	transfer	2024-08-03 20:51:26.326286+03	1	6	6	5000.00	\N	\N
+18	-105000.00	debit	2024-08-04 18:17:17.384482+03	\N	\N	6	\N	\N	\N
+19	105000.00	credit	2024-08-04 18:17:17.389479+03	\N	\N	1	\N	\N	\N
+20	-100000.00	transfer	2024-08-04 18:17:17.390477+03	1	6	6	5000.00	\N	6
+21	-105000.00	debit	2024-08-04 18:20:48.027142+03	\N	\N	1	\N	\N	\N
+22	105000.00	credit	2024-08-04 18:20:48.03014+03	\N	\N	6	\N	\N	\N
+23	-105000.00	transfer	2024-08-04 18:20:48.031139+03	6	1	1	0.00	\N	6
+24	-105000.00	debit	2024-08-04 18:40:40.901077+03	\N	\N	6	\N	\N	\N
+25	105000.00	credit	2024-08-04 18:40:40.904075+03	\N	\N	1	\N	\N	\N
+26	-100000.00	transfer	2024-08-04 18:40:40.905075+03	1	6	6	5000.00	\N	7
+28	-105000.00	debit	2024-08-04 18:47:05.413271+03	\N	\N	1	\N	\N	7
+29	105000.00	credit	2024-08-04 18:47:05.41627+03	\N	\N	6	\N	\N	7
+30	-105000.00	transfer	2024-08-04 18:47:05.417268+03	6	1	1	0.00	\N	7
+31	-105000.00	debit	2024-08-04 18:48:48.211065+03	\N	\N	6	\N	\N	8
+32	105000.00	credit	2024-08-04 18:48:48.214063+03	\N	\N	1	\N	\N	8
+33	-105000.00	transfer	2024-08-04 18:48:48.214063+03	1	6	6	5000.00	\N	8
+34	-105000.00	debit	2024-08-04 18:49:32.064153+03	\N	\N	1	\N	\N	8
+35	105000.00	credit	2024-08-04 18:49:32.068154+03	\N	\N	6	\N	\N	8
+36	-105000.00	transfer	2024-08-04 18:49:32.06972+03	6	1	1	0.00	\N	8
+\.
+
+
+--
+-- Data for Name: wallet_userwallet; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.wallet_userwallet (wallet_ptr_id, user_id) FROM stdin;
+2	2
+3	3
+4	4
+5	5
+7	7
+8	8
+9	10
+6	6
 \.
 
 
@@ -842,14 +1055,14 @@ COPY public.wallet_transaction (id, amount, transaction_type, "timestamp", made_
 -- Name: accounts_emailverified_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.accounts_emailverified_id_seq', 4, true);
+SELECT pg_catalog.setval('public.accounts_emailverified_id_seq', 6, true);
 
 
 --
 -- Name: accounts_otp_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.accounts_otp_id_seq', 4, true);
+SELECT pg_catalog.setval('public.accounts_otp_id_seq', 6, true);
 
 
 --
@@ -870,7 +1083,7 @@ SELECT pg_catalog.setval('public.accounts_user_groups_id_seq', 1, false);
 -- Name: accounts_user_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.accounts_user_id_seq', 6, true);
+SELECT pg_catalog.setval('public.accounts_user_id_seq', 10, true);
 
 
 --
@@ -898,7 +1111,7 @@ SELECT pg_catalog.setval('public.auth_group_permissions_id_seq', 1, false);
 -- Name: auth_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.auth_permission_id_seq', 200, true);
+SELECT pg_catalog.setval('public.auth_permission_id_seq', 236, true);
 
 
 --
@@ -912,21 +1125,21 @@ SELECT pg_catalog.setval('public.django_admin_log_id_seq', 1, false);
 -- Name: django_content_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.django_content_type_id_seq', 49, true);
+SELECT pg_catalog.setval('public.django_content_type_id_seq', 58, true);
 
 
 --
 -- Name: django_migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.django_migrations_id_seq', 83, true);
+SELECT pg_catalog.setval('public.django_migrations_id_seq', 99, true);
 
 
 --
 -- Name: events_event_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.events_event_id_seq', 1, false);
+SELECT pg_catalog.setval('public.events_event_id_seq', 3, true);
 
 
 --
@@ -944,24 +1157,17 @@ SELECT pg_catalog.setval('public.events_invitationcard_id_seq', 1, false);
 
 
 --
--- Name: events_reservation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.events_reservation_id_seq', 1, false);
-
-
---
 -- Name: locations_address_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.locations_address_id_seq', 4, true);
+SELECT pg_catalog.setval('public.locations_address_id_seq', 12, true);
 
 
 --
 -- Name: locations_location_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.locations_location_id_seq', 4, true);
+SELECT pg_catalog.setval('public.locations_location_id_seq', 12, true);
 
 
 --
@@ -982,28 +1188,28 @@ SELECT pg_catalog.setval('public.notifications_notification_id_seq', 1, false);
 -- Name: photos_decorphotos_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.photos_decorphotos_id_seq', 3, true);
+SELECT pg_catalog.setval('public.photos_decorphotos_id_seq', 6, true);
 
 
 --
 -- Name: photos_foodphotos_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.photos_foodphotos_id_seq', 4, true);
+SELECT pg_catalog.setval('public.photos_foodphotos_id_seq', 6, true);
 
 
 --
 -- Name: photos_maindecorphoto_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.photos_maindecorphoto_id_seq', 1, true);
+SELECT pg_catalog.setval('public.photos_maindecorphoto_id_seq', 6, true);
 
 
 --
 -- Name: photos_mainfoodphoto_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.photos_mainfoodphoto_id_seq', 1, true);
+SELECT pg_catalog.setval('public.photos_mainfoodphoto_id_seq', 5, true);
 
 
 --
@@ -1017,7 +1223,7 @@ SELECT pg_catalog.setval('public.photos_servicephotos_id_seq', 12, true);
 -- Name: photos_serviceprofilephoto_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.photos_serviceprofilephoto_id_seq', 4, true);
+SELECT pg_catalog.setval('public.photos_serviceprofilephoto_id_seq', 8, true);
 
 
 --
@@ -1042,13 +1248,6 @@ SELECT pg_catalog.setval('public.reviews_review_id_seq', 9, true);
 
 
 --
--- Name: services_booking_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.services_booking_id_seq', 1, false);
-
-
---
 -- Name: services_decor_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -1059,7 +1258,21 @@ SELECT pg_catalog.setval('public.services_decor_id_seq', 8, true);
 -- Name: services_decoretype_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_decoretype_id_seq', 4, true);
+SELECT pg_catalog.setval('public.services_decoretype_id_seq', 6, true);
+
+
+--
+-- Name: services_decorinorder_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.services_decorinorder_id_seq', 1, false);
+
+
+--
+-- Name: services_decorsinreservation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.services_decorsinreservation_id_seq', 1, false);
 
 
 --
@@ -1073,28 +1286,49 @@ SELECT pg_catalog.setval('public.services_favoriteservice_id_seq', 1, false);
 -- Name: services_food_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_food_id_seq', 1, true);
+SELECT pg_catalog.setval('public.services_food_id_seq', 5, true);
+
+
+--
+-- Name: services_foodinorder_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.services_foodinorder_id_seq', 1, false);
 
 
 --
 -- Name: services_foodservicefood_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_foodservicefood_id_seq', 1, true);
+SELECT pg_catalog.setval('public.services_foodservicefood_id_seq', 5, true);
 
 
 --
 -- Name: services_foodtype_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_foodtype_id_seq', 1, true);
+SELECT pg_catalog.setval('public.services_foodtype_id_seq', 2, true);
 
 
 --
 -- Name: services_foodtypeservice_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_foodtypeservice_id_seq', 2, true);
+SELECT pg_catalog.setval('public.services_foodtypeservice_id_seq', 3, true);
+
+
+--
+-- Name: services_order_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.services_order_id_seq', 1, false);
+
+
+--
+-- Name: services_reservation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.services_reservation_id_seq', 8, true);
 
 
 --
@@ -1122,21 +1356,21 @@ SELECT pg_catalog.setval('public.services_servicetype_id_seq', 7, true);
 -- Name: videos_video_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.videos_video_id_seq', 1, false);
+SELECT pg_catalog.setval('public.videos_video_id_seq', 1, true);
 
 
 --
 -- Name: wallet_transaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.wallet_transaction_id_seq', 1, false);
+SELECT pg_catalog.setval('public.wallet_transaction_id_seq', 36, true);
 
 
 --
 -- Name: wallet_wallet_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.wallet_wallet_id_seq', 1, false);
+SELECT pg_catalog.setval('public.wallet_wallet_id_seq', 9, true);
 
 
 --
