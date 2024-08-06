@@ -18,6 +18,8 @@ from events.models import EventType, Event
 
 from EventEase_server.utils import CustomPageNumberPagination
 
+from django_filters.rest_framework import DjangoFilterBackend
+
 from .models import (ServiceType, Service, FoodService, ServiceProviderApplication, FavoriteService,FoodTypeService,
 FoodType, FoodServiceFood, Food, DJService, Venue, PhotoGrapherService, EntertainementService, DecorationService,
 Decor, DecorEventType, ServiceReservation,Reservation)
@@ -308,6 +310,14 @@ class UserFavoriteServices(APIView):
 class ServiceViewSet(ModelViewSet):
     queryset = Service.objects.all()
     pagination_class = CustomPageNumberPagination
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = {
+        'location__address__country': ['exact', 'icontains'],
+        'location__address__state': ['exact', 'icontains'],
+        'location__address__village_city': ['exact', 'icontains'],
+        'location__address__street': ['exact', 'icontains'],
+    }
+
     def get_serializer_class(self):
 
         if self.action in ['list','create']:
@@ -466,8 +476,10 @@ class FoodAPIView(APIView):
             serializer = FoodServiceFoodSerializer(food)
             return Response(serializer.data, status=status.HTTP_200_OK)            
         foods = FoodServiceFood.objects.filter(foodService=service,food__food_type=food_type)
-        serializer = FoodServiceFoodSerializer(foods, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        paginator = CustomPageNumberPagination()
+        paginated_queryset = paginator.paginate_queryset(foods, request)
+        serializer = FoodServiceFoodSerializer(paginated_queryset , many=True)
+        return paginator.get_paginated_response(serializer.data) 
     
     def delete(self, request, service_pk, food_pk, **kwargs):
         service = get_object_or_404(FoodService, id=service_pk)
@@ -514,9 +526,12 @@ class ListRetrieveFoodAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)         
         foods = FoodServiceFood.objects.filter(foodService=service)
         if food_type_ids:
-            foods = foods.filter(food__food_type__in = food_type_ids).distinct()   
-        serializer = FoodServiceFoodSerializer(foods, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            foods = foods.filter(food__food_type__in = food_type_ids).distinct()
+        paginator = CustomPageNumberPagination()
+        paginated_queryset = paginator.paginate_queryset(foods, request)
+        serializer = FoodServiceFoodSerializer(paginated_queryset , many=True)
+        return paginator.get_paginated_response(serializer.data)    
+
     
 
 
