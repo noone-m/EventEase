@@ -8,12 +8,15 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError,PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.filters import SearchFilter
 from accounts.permissions import IsAdminUser,IsOwner,IsOwnerOrAdminUser,IsServiceOwnerOrAdmin,Default,DefaultOrIsAdminUser
 # from locations.serializers import LocationSerializer
 from locations.models import Address, Location
 from locations.serializers import AddressSerializer,LocationSerializer
 
 from events.models import EventType, Event
+
+from EventEase_server.utils import CustomPageNumberPagination
 
 from .models import (ServiceType, Service, FoodService, ServiceProviderApplication, FavoriteService,FoodTypeService,
 FoodType, FoodServiceFood, Food, DJService, Venue, PhotoGrapherService, EntertainementService, DecorationService,
@@ -23,12 +26,12 @@ from .serializers import (FoodServiceSerializer, ServiceTypeSerializer, ServiceP
 FavoriteServiceSerializer, ServiceSerializer, DJServiceSerializer, FoodTypeSerializer, FoodTypeServiceSerializer,
 FoodSerializer, FoodServiceFoodSerializer, VenueSerializer, PhotoGrapherServiceSerializer
 ,EntertainementServiceSerializer, DecorationServiceSerializer, DecorSerializer,DecorEventTypeListSerializer,
-MyServiceTypeSerializer, ServiceReservationSerializer
+MyServiceTypeSerializer, ServiceReservationSerializer, NewFoodTypeSerializer
 )
 
 from wallet.models import FEE_PERCENTAGE,CenterWallet
 
-from policy import get_refund_after_cancelling_service_reservation
+from policy import RESERVATION_PROTECTION_PERCENTAGE
 
 
 def get_model_for_service_type(type):
@@ -304,7 +307,7 @@ class UserFavoriteServices(APIView):
 
 class ServiceViewSet(ModelViewSet):
     queryset = Service.objects.all()
-
+    pagination_class = CustomPageNumberPagination
     def get_serializer_class(self):
 
         if self.action in ['list','create']:
@@ -402,12 +405,15 @@ class DeleteRetrieveFoodTypeAPIView(APIView):
         type_instance = get_object_or_404(FoodType, id=type_pk)
         food_type_service = get_object_or_404(FoodTypeService, foodService=service, foodType=type_instance)
 
+        type_instance.delete()
         food_type_service.delete()
         return Response({'detail': 'Food type deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
 
     def get(self, request, service_pk, type_pk,**kwargs):
-        food_type = get_object_or_404(FoodType,id = type_pk)
-        serialzer = FoodTypeSerializer(food_type)
+        service = get_object_or_404(FoodService, id=service_pk)
+        food_type = get_object_or_404(FoodType, id=type_pk)
+        food_type_service = get_object_or_404(FoodTypeService,foodService = service, foodType=food_type)
+        serialzer = FoodTypeSerializer(food_type_service.foodType)
         return Response(serialzer.data,status=status.HTTP_200_OK)
     
     def get_permissions(self):
@@ -418,6 +424,19 @@ class DeleteRetrieveFoodTypeAPIView(APIView):
     
 
 class FoodAPIView(APIView):
+    
+    # maybe utilizing get_queryset is better 
+    #               |
+    #               V
+    # def get_queryset(self, service_pk, food_type_pk, food_pk=None):
+    #     # Base queryset for FoodServiceFood
+    #     queryset = FoodServiceFood.objects.filter(
+    #         foodService_id=service_pk,
+    #         food__food_type_id=food_type_pk
+    #     )
+    #     if food_pk:
+    #         queryset = queryset.filter(food_id=food_pk)
+    #     return queryset
     
     def post(self, request, service_pk, type_pk, **kwargs):
         service = get_object_or_404(FoodService, id=service_pk)
@@ -456,14 +475,31 @@ class FoodAPIView(APIView):
         food_service_food.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+    def patch(self, request, service_pk,type_pk = None, food_pk=None, **kwargs):
+        service = get_object_or_404(FoodService, id=service_pk)
+        food_type = get_object_or_404(FoodType, id=type_pk)
+        food_service_food = get_object_or_404(FoodServiceFood, foodService=service, food_id=food_pk, food__food_type =food_type)
+        new_food_type_serializer = NewFoodTypeSerializer(data=request.data)
+        if new_food_type_serializer.is_valid():
+            new_type = new_food_type_serializer.validated_data['new_type']
+            new_type = get_object_or_404(FoodType,id = new_type)
+            food_service_food.food.food_type = new_type
+        serializer = FoodSerializer(food_service_food.food,data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=200)
+        return Response(serializer.errors,status=400)
+    
+
     def get_permissions(self):
         if self.request.method == 'GET':
             return [IsAuthenticated()]
-        elif self.request.method in ['DELETE', 'POST']:
+        elif self.request.method in ['DELETE', 'POST', 'PATCH']:
             return [IsServiceOwnerOrAdmin()] 
     
 
 class ListRetrieveFoodAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request, service_pk, food_pk=None, **kwargs):
 
         food_type_ids = request.query_params.getlist('food_type')
@@ -481,6 +517,10 @@ class ListRetrieveFoodAPIView(APIView):
             foods = foods.filter(food__food_type__in = food_type_ids).distinct()   
         serializer = FoodServiceFoodSerializer(foods, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+
+
 
 class LocationDetailView(RetrieveUpdateAPIView):
     serializer_class = LocationSerializer
@@ -536,9 +576,10 @@ class DecorAPIView(APIView):
 
         if event_type_ids:
             decors = decors.filter(decoreventtype__event_type__in=event_type_ids).distinct()
-
-        serializer = DecorSerializer(decors, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        paginator = CustomPageNumberPagination()
+        paginated_queryset = paginator.paginate_queryset(decors, request)
+        serializer = DecorSerializer(paginated_queryset , many=True)
+        return paginator.get_paginated_response(serializer.data)   
     
     def patch(self, request, service_pk, decor_pk, **kwargs):
         service = get_object_or_404(DecorationService, id=service_pk)
@@ -625,10 +666,10 @@ class ServiceReservationAPIView(APIView):
     #     reservation = get_object_or_404(ServiceReservation, id = reservation_pk)
     #     # reservation_owner = reservation.event.user
     #     print(request.user.is_superuser)
-    #     if reservation.event.user == request.user or request.user.is_superuser:
+    #     if reservation.event.user == request.user:
+    #         if reservation.status == 'Pending'
     #         reservation.delete()
     #         return Response(status=status.HTTP_204_NO_CONTENT)
-    #     print('m')
     #     return Response({'message':'you do not have permission to perform this action'}, status=status.HTTP_403_FORBIDDEN)
 
     def get_permissions(self):
@@ -640,7 +681,8 @@ class ServiceReservationAPIView(APIView):
 
 class RejectServiceReservationAPIView(APIView):
     def post(self, request,service_pk=None, reservation_pk=None):
-        reservation = get_object_or_404(ServiceReservation, id = reservation_pk)
+        service = get_object_or_404(Service, id = service_pk)
+        reservation = get_object_or_404(ServiceReservation, id = reservation_pk, service = service)
         if request.user == reservation.service.service_provider:
             reservation.status = 'Rejected'
             reservation_cost = float(reservation.cost) 
@@ -652,7 +694,20 @@ class RejectServiceReservationAPIView(APIView):
             raise PermissionDenied('you do not have permission to perform this action')
 
 
-class ConfirmReservaiton(APIView):
+class ConfirmServiceReservationAPIView(APIView):
     # when service provider confirm 
     # service_provider.get_wallet().transfer_funds(target_wallet = CenterWallet.objects.first(),amount = cost * 0.5, reservation = service_reservation)
-    pass
+    def post(self, request,service_pk=None, reservation_pk=None):
+        service = get_object_or_404(Service, id = service_pk)
+        reservation = get_object_or_404(ServiceReservation, id = reservation_pk)
+        if request.user == reservation.service.service_provider:
+            reservation.status = 'Confirmed'
+            if  float(reservation.cost) * RESERVATION_PROTECTION_PERCENTAGE < request.user.get_wallet().balance:
+                request.user.get_wallet().transfer_funds(CenterWallet.objects.first(),
+                                                        amount = float(reservation.cost) * RESERVATION_PROTECTION_PERCENTAGE,
+                                                        reservation = reservation)
+                reservation.save()
+                return Response({'message':'the reservation has been confirmed successfully'}, status= 200)
+            return Response({'message':'Insufficient funds'}, status= 400)
+        else:
+            raise PermissionDenied('you do not have permission to perform this action')

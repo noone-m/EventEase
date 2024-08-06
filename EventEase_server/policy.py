@@ -7,7 +7,12 @@ import typing
 from datetime import datetime, timedelta
 from accounts.models import User
 from services.models import ServiceReservation
-from wallet.models import CenterWallet
+
+
+
+FEE_PERCENTAGE = 0.05
+RESERVATION_PROTECTION_PERCENTAGE = 0.5
+
 
 def get_compensation_percentage(time_passed:datetime,whole_time_span:datetime):
     """
@@ -43,6 +48,7 @@ def get_compensation_percentage(time_passed:datetime,whole_time_span:datetime):
         return 0.36
     
 def get_refund_after_cancelling_service_reservation(user:User,reservation:ServiceReservation):
+    from wallet.models import CenterWallet
     """
     return how much refund should be if user or service provider has cancelled a service reservation
     Args:
@@ -66,5 +72,5 @@ def get_refund_after_cancelling_service_reservation(user:User,reservation:Servic
         return reservation.cost + reservation.cost * get_compensation_percentage(time_passed,whole_time_span)
     elif user == reservation.event.user: # we multiply by 0.5 because that is how much money service provider pay when the reservation is made
         if time_to_reservation <= timedelta(hours=24):
-            return 0.5 * reservation.cost + reservation.cost * 0.5
-        return 0.5 * reservation.cost + reservation.cost * get_compensation_percentage(time_passed,whole_time_span)
+            return RESERVATION_PROTECTION_PERCENTAGE* reservation.cost + reservation.cost * 0.5
+        return RESERVATION_PROTECTION_PERCENTAGE * reservation.cost + reservation.cost * get_compensation_percentage(time_passed,whole_time_span)

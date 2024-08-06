@@ -5,8 +5,7 @@ from django.utils.timezone import now
 from django.conf import settings
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from services.models import Reservation, Order
-
-FEE_PERCENTAGE = 0.05
+from policy import FEE_PERCENTAGE
 
 class Wallet(models.Model):
     """

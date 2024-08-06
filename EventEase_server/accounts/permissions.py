@@ -84,14 +84,14 @@ class IsServiceOwnerOrAdmin(BasePermission):
     def has_permission(self, request, view):
         is_service_owner = IsServiceOwner()
         is_admin_user = IsAdminUser()
-        return is_service_owner.has_permission(request,view) or is_admin_user.has_permission(request,view)
+        return IsAuthenticated().has_permission(request, view) and is_service_owner.has_permission(request,view) or is_admin_user.has_permission(request,view)
     
 
 class DefaultOrIsAdminUser(BasePermission):
     def has_permission(self, request, view):
-        return IsAdminUser().has_permission(request, view) or IsEmailVerified().has_permission(request, view) and IsPhoneVerified().has_permission(request, view)
+        return IsAuthenticated().has_permission(request, view) and IsAdminUser().has_permission(request, view) or IsEmailVerified().has_permission(request, view) and IsPhoneVerified().has_permission(request, view)
     
 
 class Default(BasePermission):
     def has_permission(self, request, view):
-        return IsEmailVerified().has_permission(request, view) and IsPhoneVerified().has_permission(request, view)
+        return IsAuthenticated().has_permission(request, view) and IsEmailVerified().has_permission(request, view) and IsPhoneVerified().has_permission(request, view)

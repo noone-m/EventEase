@@ -18,9 +18,9 @@ class EventTypeViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy','creat']:
-            self.permission_classes = [IsAdminUser]
+            return [IsAdminUser()]
         elif self.action in['list','retrieve']:
-            self.permission_classes = [IsAuthenticated]
+            return [IsAuthenticated()]
         else:
             pass
         return super().get_permissions()
@@ -80,10 +80,9 @@ class EventAPIView(APIView):
 
     def get_permissions(self):
         if self.request.method in ['PUT', 'PATCH']:
-            self.permission_classes = [IsOwner]
+            return [IsOwner()]
         if self.request.method in ['DELETE','GET']:
-            self.permission_classes = [IsOwnerOrAdminUser]
+            return [IsOwnerOrAdminUser()]
         if self.request.method == 'POST':
-            self.permission_classes = [Default]
-        return super().get_permissions()
+            return  [Default()]
     

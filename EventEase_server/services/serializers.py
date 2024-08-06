@@ -152,7 +152,7 @@ class DecorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Decor
         fields = ['id','decor_service', 'name', 'quantity', 'hourly_rate', 'available_quantity', 'price', 'description','decor_event_types']
-        read_only_fields = ['id','avialable_quantity','decor_service','available_quantity']
+        read_only_fields = ['id','avialable_quantity','decor_service']
 
     def get_decor_event_types(self, obj):
         print(obj)
@@ -173,3 +173,6 @@ class ServiceReservationSerializer(serializers.ModelSerializer):
         model = ServiceReservation
         fields = '__all__'
         read_only_fields = ['id', 'service', 'cost', 'status']
+
+class NewFoodTypeSerializer(serializers.Serializer):
+    new_type = serializers.IntegerField()

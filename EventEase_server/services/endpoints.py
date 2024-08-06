@@ -2,7 +2,8 @@ from django.urls import path,include
 from .views import (FoodServiceViewSet,ServiceTypeViewSet,ServiceProviderApplicationView,ApproveApplication,
 ServiceViewSet,DeclineApplication,ServiceProviderApplicationDetailView,FoodTypeAPIView,
 DeleteRetrieveFoodTypeAPIView,FoodAPIView,LocationDetailView,DecorAPIView,MyServiceAPIView,
-MyServiceTypeAPIView, ServiceReservationAPIView,RejectServiceReservationAPIView,ListRetrieveFoodAPIView)
+MyServiceTypeAPIView, ServiceReservationAPIView,RejectServiceReservationAPIView,ListRetrieveFoodAPIView,
+ConfirmServiceReservationAPIView)
 
 from photos.views import (ServicePhotosAPIView,ServiceProfilePhotoAPIView,FoodPhotosAPIView,MainFoodPhotoAPIView
 ,DecorPhotosAPIView,MainDecorPhotoAPIView)
@@ -74,6 +75,6 @@ urlpatterns = [
     path('<int:service_pk>/reservations/',ServiceReservationAPIView.as_view()), 
     path('<int:service_pk>/reservations/<int:reservation_pk>/',ServiceReservationAPIView.as_view()), 
     path('<int:service_pk>/reservations/<int:reservation_pk>/reject/',RejectServiceReservationAPIView.as_view()), 
-    
+    path('<int:service_pk>/reservations/<int:reservation_pk>/confirm/',ConfirmServiceReservationAPIView.as_view()), 
     path('',include(router.urls)),
 ] 

@@ -14,6 +14,8 @@ from rest_framework.authtoken.models import Token
 
 from wallet.models import UserWallet
 
+from EventEase_server.utils import CustomPageNumberPagination
+
 from services.models import FoodService
 from .serializers import(TokenSerializer,RegisterSerializer,OTPSerializer,AdminUserSerializer,
 ChangePasswordRequestedSerialzer, ChangePasswordRequestsSerializer, UpdatePasswordSerializer,
@@ -181,6 +183,7 @@ class ChangePassowrdRequests(ListAPIView):
 
 class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
+    pagination_class = CustomPageNumberPagination
     serializer_class = AdminUserSerializer
 
     def get_permissions(self):
