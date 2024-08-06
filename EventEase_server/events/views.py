@@ -15,6 +15,7 @@ class EventTypeViewSet(viewsets.ModelViewSet):
     queryset = EventType.objects.all()
     serializer_class = EventTypeSerializer
     permission_classes = [IsAdminUser]
+    pagination_class = None
 
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy','creat']:
