@@ -1,8 +1,11 @@
 from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.filters import SearchFilter
 from .serializers import AddressSerializer,LocationSerializer
 from .models import Address,Location
-from accounts.permissions import IsAuthenticated,IsAdminUser
+from accounts.permissions import IsAuthenticated,IsAdminUser,DefaultOrIsAdminUser
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 class AddressViewSet(ModelViewSet):
     queryset = Address.objects.all()
@@ -17,4 +20,6 @@ class AddressViewSet(ModelViewSet):
 class LocationViewSet(ModelViewSet):
     queryset = Location.objects.all()
     serializer_class = LocationSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [DefaultOrIsAdminUser]
+    search_fields = ['address__country','address__state','address__street','address__village_city']
+    filter_backends = (SearchFilter,)

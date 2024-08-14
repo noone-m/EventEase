@@ -3,7 +3,8 @@ from .views import (FoodServiceViewSet,ServiceTypeViewSet,ServiceProviderApplica
 ServiceViewSet,DeclineApplication,ServiceProviderApplicationDetailView,FoodTypeAPIView,
 DeleteRetrieveFoodTypeAPIView,FoodAPIView,LocationDetailView,DecorAPIView,MyServiceAPIView,
 MyServiceTypeAPIView, ServiceReservationAPIView,RejectServiceReservationAPIView,ListRetrieveFoodAPIView,
-ConfirmServiceReservationAPIView)
+ConfirmServiceReservationAPIView, CancelServiceReservation, ServicesReservationsAPIView, 
+DecorsReservationsAPIView)
 
 from photos.views import (ServicePhotosAPIView,ServiceProfilePhotoAPIView,FoodPhotosAPIView,MainFoodPhotoAPIView
 ,DecorPhotosAPIView,MainDecorPhotoAPIView)
@@ -36,6 +37,8 @@ urlpatterns = [
 
     path('my-service/',MyServiceAPIView.as_view()),
     path('my-service/type',MyServiceTypeAPIView.as_view()),
+    path('services-reservations/',ServicesReservationsAPIView.as_view()),
+    path('decors-reservations/',DecorsReservationsAPIView.as_view()),
 
     path('<int:service_pk>/photos/',ServicePhotosAPIView.as_view()),
     path('<int:service_pk>/location/',LocationDetailView.as_view()),
@@ -75,6 +78,7 @@ urlpatterns = [
     path('<int:service_pk>/reservations/',ServiceReservationAPIView.as_view()), 
     path('<int:service_pk>/reservations/<int:reservation_pk>/',ServiceReservationAPIView.as_view()), 
     path('<int:service_pk>/reservations/<int:reservation_pk>/reject/',RejectServiceReservationAPIView.as_view()), 
-    path('<int:service_pk>/reservations/<int:reservation_pk>/confirm/',ConfirmServiceReservationAPIView.as_view()), 
+    path('<int:service_pk>/reservations/<int:reservation_pk>/confirm/',ConfirmServiceReservationAPIView.as_view()),
+    path('<int:service_pk>/reservations/<int:reservation_pk>/cancel/',CancelServiceReservation.as_view()), 
     path('',include(router.urls)),
 ] 

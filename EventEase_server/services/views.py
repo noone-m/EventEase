@@ -22,19 +22,20 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import (ServiceType, Service, FoodService, ServiceProviderApplication, FavoriteService,FoodTypeService,
 FoodType, FoodServiceFood, Food, DJService, Venue, PhotoGrapherService, EntertainementService, DecorationService,
-Decor, DecorEventType, ServiceReservation,Reservation)
+Decor, DecorEventType, ServiceReservation, Reservation, DecorsReservation)
 
 from .serializers import (FoodServiceSerializer, ServiceTypeSerializer, ServiceProviderApplicationSerializer,
 FavoriteServiceSerializer, ServiceSerializer, DJServiceSerializer, FoodTypeSerializer, FoodTypeServiceSerializer,
 FoodSerializer, FoodServiceFoodSerializer, VenueSerializer, PhotoGrapherServiceSerializer
 ,EntertainementServiceSerializer, DecorationServiceSerializer, DecorSerializer,DecorEventTypeListSerializer,
-MyServiceTypeSerializer, ServiceReservationSerializer, NewFoodTypeSerializer
+MyServiceTypeSerializer, ServiceReservationSerializer, NewFoodTypeSerializer, DecorsReservationSerializer
 )
 
 from wallet.models import FEE_PERCENTAGE,CenterWallet
 
-from policy import RESERVATION_PROTECTION_PERCENTAGE
+from policy import RESERVATION_PROTECTION_PERCENTAGE, get_refund_after_cancelling_service_reservation
 
+from .filters import ServiceFilter
 
 def get_model_for_service_type(type):
     if type == 'food':
@@ -311,12 +312,7 @@ class ServiceViewSet(ModelViewSet):
     queryset = Service.objects.all()
     pagination_class = CustomPageNumberPagination
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = {
-        'location__address__country': ['exact', 'icontains'],
-        'location__address__state': ['exact', 'icontains'],
-        'location__address__village_city': ['exact', 'icontains'],
-        'location__address__street': ['exact', 'icontains'],
-    }
+    filterset_class = ServiceFilter
 
     def get_serializer_class(self):
 
@@ -640,7 +636,10 @@ class ServiceReservationAPIView(APIView):
             serializer = ServiceReservationSerializer(reservation)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            reservations = ServiceReservation.objects.filter(service=service)
+            if request.user == service.service_provider:
+                reservation = ServiceReservation.objects.filter(service=service)
+            else :
+                reservations = ServiceReservation.objects.filter(service=service, event__user = request.user)
             serializer = ServiceReservationSerializer(reservations, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
@@ -688,23 +687,42 @@ class ServiceReservationAPIView(APIView):
     #     return Response({'message':'you do not have permission to perform this action'}, status=status.HTTP_403_FORBIDDEN)
 
     def get_permissions(self):
-        if self.request.method in ['GET', 'POST']:
+        if self.request.method in ['POST', 'GET']:
             return [DefaultOrIsAdminUser()]
         elif self.request.method == 'DELETE':
             return [DefaultOrIsAdminUser()] 
         
+
+class ServicesReservationsAPIView(APIView):
+    """
+    return the reservatoins that user has made for specific services
+    """
+    def get(self,request):
+        reservations = ServiceReservation.objects.filter(event__user = request.user).all()
+        serializer = ServiceReservationSerializer(reservations, many = True)
+        return Response(serializer.data,status=200)
+
+
+class DecorsReservationsAPIView(APIView):
+    def get(self,request):
+        reservations = DecorsReservation.objects.filter(event__user = request.user).all()
+        serializer = DecorsReservationSerializer(reservations, many = True)
+        return Response(serializer.data,status=200)  
 
 class RejectServiceReservationAPIView(APIView):
     def post(self, request,service_pk=None, reservation_pk=None):
         service = get_object_or_404(Service, id = service_pk)
         reservation = get_object_or_404(ServiceReservation, id = reservation_pk, service = service)
         if request.user == reservation.service.service_provider:
-            reservation.status = 'Rejected'
-            reservation_cost = float(reservation.cost) 
-            fee = reservation_cost* FEE_PERCENTAGE
-            CenterWallet.objects.first().transfer_funds( reservation.event.user.get_wallet(),amount=reservation_cost+fee,reservation=reservation)   
-            reservation.save()
-            return Response({'message':'the reservation has been rejected successfully'}, status= 200)  
+            if reservation.status == 'Pending':
+                reservation.status = 'Rejected'
+                reservation_cost = float(reservation.cost) 
+                fee = reservation_cost* FEE_PERCENTAGE
+                CenterWallet.objects.first().transfer_funds( reservation.event.user.get_wallet(),amount=reservation_cost+fee,reservation=reservation)   
+                reservation.save()
+                return Response({'message':'the reservation has been rejected successfully'}, status= 200) 
+            else:
+                return Response({'message':'you can not reject this reservation'}, status= 400) 
         else:
             raise PermissionDenied('you do not have permission to perform this action')
 
@@ -716,13 +734,54 @@ class ConfirmServiceReservationAPIView(APIView):
         service = get_object_or_404(Service, id = service_pk)
         reservation = get_object_or_404(ServiceReservation, id = reservation_pk)
         if request.user == reservation.service.service_provider:
-            reservation.status = 'Confirmed'
-            if  float(reservation.cost) * RESERVATION_PROTECTION_PERCENTAGE < request.user.get_wallet().balance:
-                request.user.get_wallet().transfer_funds(CenterWallet.objects.first(),
-                                                        amount = float(reservation.cost) * RESERVATION_PROTECTION_PERCENTAGE,
-                                                        reservation = reservation)
-                reservation.save()
-                return Response({'message':'the reservation has been confirmed successfully'}, status= 200)
-            return Response({'message':'Insufficient funds'}, status= 400)
+            if reservation.status == 'Pending':
+                reservation.status = 'Confirmed'
+                if  float(reservation.cost) * RESERVATION_PROTECTION_PERCENTAGE < request.user.get_wallet().balance:
+                    request.user.get_wallet().transfer_funds(CenterWallet.objects.first(),
+                                                            amount = float(reservation.cost) * RESERVATION_PROTECTION_PERCENTAGE,
+                                                            reservation = reservation)
+                    reservation.save()
+                    return Response({'message':'the reservation has been confirmed successfully'}, status= 200)
+                return Response({'message':'Insufficient funds'}, status= 400)
+            else: return Response({'message':'you can not confirm this reservation'}, status= 400)
         else:
             raise PermissionDenied('you do not have permission to perform this action')
+        
+
+class CancelServiceReservation(APIView):
+    def post(self, request,service_pk=None, reservation_pk=None):
+        service = get_object_or_404(Service, id = service_pk)
+        reservation = get_object_or_404(ServiceReservation, id = reservation_pk)
+        reservation_cost = float(reservation.cost)
+        compensation,refund = get_refund_after_cancelling_service_reservation(request.user, reservation)
+        if reservation.status != 'Confirmed':
+            return Response({'message':'you can not cancel this reservation'}, status= 400)
+        if request.user == reservation.service.service_provider:
+            CenterWallet.objects.first().transfer_funds(target_wallet=reservation.event.user.get_wallet(),
+                                                        amount=refund,
+                                                        reservation=reservation)
+            # we will return the fee to the service provider + the amount of money left after compensation
+            #the remaining_money_after_compensation is the whole amount of money paid for compensation - the money that actually been paid as compensation
+            remaining_money_after_compensation = reservation_cost*RESERVATION_PROTECTION_PERCENTAGE - compensation
+            CenterWallet.objects.first().transfer_funds(target_wallet=reservation.service.service_provider.get_wallet(),
+                                                        amount=reservation_cost*RESERVATION_PROTECTION_PERCENTAGE*FEE_PERCENTAGE + remaining_money_after_compensation,
+                                                        reservation=reservation)
+            reservation.status = 'Cancelled'  
+            reservation.save()   
+            return Response({'message':'the reservation has been cancelled successfully'}, status= 200)
+        elif request.user == reservation.event.user:
+            CenterWallet.objects.first().transfer_funds(target_wallet=reservation.service.service_provider.get_wallet(),
+                                                        amount=refund,
+                                                        reservation=reservation)
+            # we will return the fee to the user
+            remaining_money_after_compensation = reservation_cost - compensation
+            CenterWallet.objects.first().transfer_funds(target_wallet=reservation.event.user.get_wallet(),
+                                                        amount=reservation_cost*FEE_PERCENTAGE + remaining_money_after_compensation, # if compensation is zero then the user will get all money back
+                                                        reservation=reservation)
+            reservation.status = 'Cancelled'  
+            reservation.save()   
+            return Response({'message':'the reservation has been cancelled successfully'}, status= 200)
+        else:
+            return Response({'message':'you can not perform this actino'}, status= 401)        
+      
+

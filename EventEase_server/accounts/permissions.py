@@ -34,7 +34,7 @@ class IsOwnerOrAdminUser(BasePermission):
     Custom permission to grant only owners of an object or admin users the permissoins.
     """
     def has_permission(self, request, view):
-        return IsAuthenticated()
+        return IsAuthenticated().has_permission(request,view)
     
     def has_object_permission(self, request, view, obj):
         # Check if the request user is the owner or an admin

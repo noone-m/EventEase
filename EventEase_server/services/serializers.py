@@ -6,7 +6,7 @@ from accounts.serializers import AdminUserSerializer
 from photos.serializers import ServicePhotosSerializers
 from .models import (FoodService, ServiceReservation, ServiceType, ServiceProviderApplication, FavoriteService, Service, DJService, Food
 , FoodType, FoodTypeService, FoodServiceFood, Venue, PhotoGrapherService, EntertainementService, Decor,
-DecorEventType,DecorationService)
+DecorEventType,DecorationService, DecorsReservation, Reservation)
 from rest_framework import serializers
 
 
@@ -168,11 +168,28 @@ class MyServiceTypeSerializer(serializers.Serializer):
     avg_rating = serializers.FloatField(read_only = True)
 
 
+class ReservationSerializer(serializers.ModelSerializer):
+    class Meta:
+        
+        model = Reservation
+        fields = ['event', 'start_time', 'end_time', 'status', 'cost', 'created_at']
+        read_only_fields = ['event', 'start_time', 'end_time', 'status', 'cost', 'created_at']
+
+
 class ServiceReservationSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServiceReservation
         fields = '__all__'
         read_only_fields = ['id', 'service', 'cost', 'status']
+
+
+class DecorsReservationSerializer(serializers.ModelSerializer):
+    class Meta:
+        # decors = 
+        model = DecorsReservation
+        fields = '__all__'
+        read_only_fields = ['id', 'service', 'cost', 'status']
+
 
 class NewFoodTypeSerializer(serializers.Serializer):
     new_type = serializers.IntegerField()
