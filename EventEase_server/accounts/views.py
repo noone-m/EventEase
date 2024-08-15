@@ -12,6 +12,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.authtoken.models import Token
 
+from django_filters.rest_framework import DjangoFilterBackend
+
 from wallet.models import UserWallet
 
 from EventEase_server.utils import CustomPageNumberPagination
@@ -23,6 +25,8 @@ EmailVerifiedSerializer)
 from .models import OTP,User,PasswordChangeRequested,EmailVerified
 from .permissions import IsOwner,IsAdminUser,IsPhoneVerified
 from . import utils
+from .filters import UserFilter
+
 
 # throttle here for brute force
 class Login(ObtainAuthToken):
@@ -185,6 +189,8 @@ class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     pagination_class = CustomPageNumberPagination
     serializer_class = AdminUserSerializer
+    filter_backends = [DjangoFilterBackend,]
+    filterset_class = UserFilter
 
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy']:
