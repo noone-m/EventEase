@@ -11,6 +11,8 @@ from django.db import transaction as db_transaction
 from accounts.models import User
 from accounts.permissions import IsAdminUser,DefaultOrIsAdminUser
 
+from EventEase_server.utils import CustomPageNumberPagination
+
 from .models import UserWallet,Transaction
 
 
@@ -76,5 +78,8 @@ class TransactionsAPIView(APIView):
         else:
             wallet = get_object_or_404(UserWallet,user = request.user)
             transactions = Transaction.objects.filter(Q(wallet=wallet) | Q(sender=wallet) | Q(receiver=wallet))
-        serializer = TransactionSerializer(transactions,many = True)
-        return Response(serializer.data,status=status.HTTP_200_OK)
+        paginator = CustomPageNumberPagination()
+        paginated_queryset = paginator.paginate_queryset(transactions, request)
+        serializer = TransactionSerializer(paginated_queryset, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
