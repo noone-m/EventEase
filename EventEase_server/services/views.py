@@ -207,8 +207,11 @@ class ServiceProviderApplicationView(APIView):
             applications = ServiceProviderApplication.objects.all()
         else : 
             applications = ServiceProviderApplication.objects.filter(user = request.user)
-        application_serializer = ServiceProviderApplicationSerializer(applications,many = True,context = {'request':request})
-        return Response(application_serializer.data)
+        paginator = CustomPageNumberPagination()
+        paginated_queryset = paginator.paginate_queryset(applications, request)
+        serializer = ServiceProviderApplicationSerializer(paginated_queryset, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
     
     
     def get_permissions(self):
