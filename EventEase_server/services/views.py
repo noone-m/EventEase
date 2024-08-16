@@ -905,6 +905,8 @@ class DecorsReservationAPIView(APIView):
     def get(self, request, service_pk, reservation_pk=None):
         # Retrieve the service
         service = get_object_or_404(Service, id=service_pk)
+        print(request.user)
+        print(service.service_provider)
         if reservation_pk is not None:
             # Retrieve a specific reservation
             reservation = get_object_or_404(DecorsReservation, id=reservation_pk, decor_service=service)
@@ -912,7 +914,7 @@ class DecorsReservationAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             if request.user == service.service_provider:
-                reservation = DecorsReservation.objects.filter(decor_service=service)
+                reservations = DecorsReservation.objects.filter(decor_service=service)
             else :
                 reservations = DecorsReservation.objects.filter(decor_service=service, event__user = request.user)
             status_param = request.query_params.get('status', None)
