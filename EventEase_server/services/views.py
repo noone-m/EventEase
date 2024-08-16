@@ -22,18 +22,18 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import (ServiceType, Service, FoodService, ServiceProviderApplication, FavoriteService,FoodTypeService,
 FoodType, FoodServiceFood, Food, DJService, Venue, PhotoGrapherService, EntertainementService, DecorationService,
-Decor, DecorEventType, ServiceReservation, Reservation, DecorsReservation)
+Decor, DecorEventType, ServiceReservation, Reservation, DecorsReservation, DecorsInReservation, FoodInOrder, Order)
 
 from .serializers import (FoodServiceSerializer, ServiceTypeSerializer, ServiceProviderApplicationSerializer,
 FavoriteServiceSerializer, ServiceSerializer, DJServiceSerializer, FoodTypeSerializer, FoodTypeServiceSerializer,
 FoodSerializer, FoodServiceFoodSerializer, VenueSerializer, PhotoGrapherServiceSerializer
 ,EntertainementServiceSerializer, DecorationServiceSerializer, DecorSerializer,DecorEventTypeListSerializer,
-MyServiceTypeSerializer, ServiceReservationSerializer, NewFoodTypeSerializer, DecorsReservationSerializer
-)
+MyServiceTypeSerializer, ServiceReservationSerializer, NewFoodTypeSerializer, DecorsReservationSerializer,
+DecorsListSerializer, OrderSerializer, FoodsListSerializer)
 
 from wallet.models import FEE_PERCENTAGE,CenterWallet
 
-from policy import RESERVATION_PROTECTION_PERCENTAGE, get_refund_after_cancelling_service_reservation
+from policy import RESERVATION_PROTECTION_PERCENTAGE, get_refund_after_cancelling_reservation, get_refund_after_cancelling_order
 
 from .filters import ServiceFilter
 
@@ -708,6 +708,16 @@ class DecorsReservationsAPIView(APIView):
         reservations = DecorsReservation.objects.filter(event__user = request.user).all()
         serializer = DecorsReservationSerializer(reservations, many = True)
         return Response(serializer.data,status=200)  
+    
+
+
+class ListOrdersAPIview(APIView):
+    def get(self,request):
+        reservations = Order.objects.filter(event__user = request.user).all()
+        serializer = OrderSerializer(reservations, many = True)
+        return Response(serializer.data,status=200) 
+    
+
 
 class RejectServiceReservationAPIView(APIView):
     def post(self, request,service_pk=None, reservation_pk=None):
@@ -753,7 +763,7 @@ class CancelServiceReservation(APIView):
         service = get_object_or_404(Service, id = service_pk)
         reservation = get_object_or_404(ServiceReservation, id = reservation_pk)
         reservation_cost = float(reservation.cost)
-        compensation,refund = get_refund_after_cancelling_service_reservation(request.user, reservation)
+        compensation,refund = get_refund_after_cancelling_reservation(request.user, reservation)
         if reservation.status != 'Confirmed':
             return Response({'message':'you can not cancel this reservation'}, status= 400)
         if request.user == reservation.service.service_provider:
@@ -785,3 +795,283 @@ class CancelServiceReservation(APIView):
             return Response({'message':'you can not perform this actino'}, status= 401)        
       
 
+class DecorsReservationAPIView(APIView):
+    def post(self, request, service_pk):
+        
+        decor_service = get_object_or_404(DecorationService, id = service_pk)
+        # Parse and validate the incoming data
+        decor_list_serializer = DecorsListSerializer(data=request.data)
+        decor_resrevation_serializer = DecorsReservationSerializer(data=request.data)
+        if decor_resrevation_serializer.is_valid():
+            start_time = decor_resrevation_serializer.validated_data.get('start_time')
+            end_time = decor_resrevation_serializer.validated_data.get('end_time')
+            event_id=decor_resrevation_serializer.validated_data.get('event')
+            event = get_object_or_404(Event,event_id)
+            if request.user != event.user:
+                return Response({'message':'you do not own this event'},status=401)
+            #  save reservation data
+            decors_reservation ,created= DecorsReservation.objects.get_or_create(event = event_id,
+                                                    decor_service = decor_service,
+                                                    start_time=start_time,
+                                                    end_time=end_time,
+                                                    cost=0
+                                                    )
+            #validating the decors in reservation data
+            if decor_list_serializer.is_valid():
+                decors_data = decor_list_serializer.validated_data['decors']
+
+                # Process each item in the list
+                processed_data = []
+                for item in decors_data:
+                    decor_id = item['decor_id']
+                    quantity = item['quantity']
+                    decor = get_object_or_404(Decor,id=decor_id)
+                    if quantity > decor.quantity:
+                        return Response({'message':'there is no enough qunatity'},status=400)
+                    decors_in_reservation,created = DecorsInReservation.objects.get_or_create(decors_reservation = decors_reservation,
+                                                                                    decor=decor,
+                                                                                    quantity=quantity,
+                                                                                    start_time=start_time,
+                                                                                    end_time=end_time,
+                                                                                    price = float(decor.hourly_rate)*((end_time-start_time).total_seconds() / 3600))
+                    decors_reservation.cost = float(decors_reservation.cost) + decors_in_reservation.price
+                    decors_reservation.save()
+                    processed_data.append([decor_id, quantity])
+                request.user.get_wallet().transfer_funds(target_wallet = CenterWallet.objects.first(),amount = float(decors_reservation.cost ), reservation = decors_reservation)
+                # Respond with processed data
+                return Response(processed_data, status=status.HTTP_200_OK)
+            else:
+                return Response(decor_list_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else: return Response(decor_resrevation_serializer.errors)
+        
+        # if reservation_pk is not None:
+        #     # Retrieve a specific reservation
+        #     reservation = get_object_or_404(DecorsReservation, id=reservation_pk, decor_service=service)
+        #     serializer = DecorsReservationSerializer(reservation)
+        #     return Response(serializer.data, status=status.HTTP_200_OK)
+        # else:
+        #     if request.user == service.service_provider:
+        #         reservations = DecorsReservation.objects.filter(decor_service=service)
+        #     else:
+        #         reservations = DecorsReservation.objects.filter(decor_service=service, event__user=request.user)
+        #     serializer = DecorsReservationSerializer(reservations, many=True)
+        #     return Response(serializer.data, status=status.HTTP_200_OK)
+
+  
+class RejectDecorsServiceReservationAPIView(APIView):
+    def post(self, request,service_pk=None, reservation_pk=None):
+        service = get_object_or_404(Service, id = service_pk)
+        reservation = get_object_or_404(DecorsReservation, id = reservation_pk, decor_service = service)
+        if request.user == reservation.decor_service.service_provider:
+            if reservation.status == 'Pending':
+                reservation.status = 'Rejected'
+                reservation_cost = float(reservation.cost) 
+                fee = reservation_cost* FEE_PERCENTAGE
+                CenterWallet.objects.first().transfer_funds( reservation.event.user.get_wallet(),amount=reservation_cost+fee,reservation=reservation)   
+                reservation.save()
+                return Response({'message':'the reservation has been rejected successfully'}, status= 200) 
+            else:
+                return Response({'message':'you can not reject this reservation'}, status= 400) 
+        else:
+            raise PermissionDenied('you do not have permission to perform this action')
+        
+
+class ConfirmDecorsServiceReservationAPIView(APIView):
+    # when service provider confirm 
+    # service_provider.get_wallet().transfer_funds(target_wallet = CenterWallet.objects.first(),amount = cost * 0.5, reservation = service_reservation)
+    def post(self, request,service_pk=None, reservation_pk=None):
+        service = get_object_or_404(Service, id = service_pk)
+        reservation = get_object_or_404(DecorsReservation, id = reservation_pk)
+        if request.user == reservation.decor_service.service_provider:
+            if reservation.status == 'Pending':
+                reservation.status = 'Confirmed'
+                if  float(reservation.cost) * RESERVATION_PROTECTION_PERCENTAGE < request.user.get_wallet().balance:
+                    request.user.get_wallet().transfer_funds(CenterWallet.objects.first(),
+                                                            amount = float(reservation.cost) * RESERVATION_PROTECTION_PERCENTAGE,
+                                                            reservation = reservation)
+                    reservation.save()
+                    return Response({'message':'the reservation has been confirmed successfully'}, status= 200)
+                return Response({'message':'Insufficient funds'}, status= 400)
+            else: return Response({'message':'you can not confirm this reservation'}, status= 400)
+        else:
+            raise PermissionDenied('you do not have permission to perform this action')
+        
+
+class CancelDecorsServiceReservation(APIView):
+    def post(self, request,service_pk=None, reservation_pk=None):
+        service = get_object_or_404(Service, id = service_pk)
+        reservation = get_object_or_404(DecorsReservation, id = reservation_pk)
+        reservation_cost = float(reservation.cost)
+        compensation,refund = get_refund_after_cancelling_reservation(request.user, reservation)
+        if reservation.status != 'Confirmed':
+            return Response({'message':'you can not cancel this reservation'}, status= 400)
+        if request.user == reservation.decor_service.service_provider:
+            CenterWallet.objects.first().transfer_funds(target_wallet=reservation.event.user.get_wallet(),
+                                                        amount=refund,
+                                                        reservation=reservation)
+            # we will return the fee to the service provider + the amount of money left after compensation
+            #the remaining_money_after_compensation is the whole amount of money paid for compensation - the money that actually been paid as compensation
+            remaining_money_after_compensation = reservation_cost*RESERVATION_PROTECTION_PERCENTAGE - compensation
+            CenterWallet.objects.first().transfer_funds(target_wallet=reservation.decor_service.service_provider.get_wallet(),
+                                                        amount=reservation_cost*RESERVATION_PROTECTION_PERCENTAGE*FEE_PERCENTAGE + remaining_money_after_compensation,
+                                                        reservation=reservation)
+            reservation.status = 'Cancelled'  
+            reservation.save()   
+            return Response({'message':'the reservation has been cancelled successfully'}, status= 200)
+        elif request.user == reservation.event.user:
+            CenterWallet.objects.first().transfer_funds(target_wallet=reservation.decor_service.service_provider.get_wallet(),
+                                                        amount=refund,
+                                                        reservation=reservation)
+            # we will return the fee to the user
+            remaining_money_after_compensation = reservation_cost - compensation
+            CenterWallet.objects.first().transfer_funds(target_wallet=reservation.event.user.get_wallet(),
+                                                        amount=reservation_cost*FEE_PERCENTAGE + remaining_money_after_compensation, # if compensation is zero then the user will get all money back
+                                                        reservation=reservation)
+            reservation.status = 'Cancelled'  
+            reservation.save()   
+            return Response({'message':'the reservation has been cancelled successfully'}, status= 200)
+        else:
+            return Response({'message':'you can not perform this actino'}, status= 401)
+        
+
+class FoodOrderAPIView(APIView):
+    def post(self, request, service_pk):
+        service = get_object_or_404(Service, id=service_pk)
+        if service.service_type.type != 'food':
+            return Response({'message':'the service should be food'},status=400)
+        if request.user == service.service_provider:
+            return Response({'message':'you can not order food from your self'},status=400)
+        order_serializer = OrderSerializer(data=request.data)
+        food_list_serializer = FoodsListSerializer(data=request.data)
+        
+        if order_serializer.is_valid():
+            total_price = 0
+            event=order_serializer.validated_data.get('event')
+            due_date=order_serializer.validated_data.get('due_date')
+            if request.user != event.user:
+                return Response({'message':'you do not own this event'},status=401)
+            food_order = Order.objects.create(
+                event=event,
+                service=service,
+                total_price=total_price,
+                due_date = due_date,
+                status='Pending'
+            )
+            
+            if food_list_serializer.is_valid():
+                foods_data = food_list_serializer.validated_data['foods']
+                
+                for item in foods_data:
+                    food_id = item['food_id']
+                    quantity = item['quantity']
+                    food = get_object_or_404(Food, id=food_id)
+
+                    price = float(food.price) * quantity
+                    FoodInOrder.objects.create(
+                        order=food_order,
+                        food=food,
+                        quantity=quantity,
+                        price=price
+                    )
+                    
+                    total_price += price
+                
+                food_order.total_price = total_price
+                food_order.save()
+                
+                # Transfer funds from user's wallet to the service provider's wallet
+                request.user.get_wallet().transfer_funds(
+                    target_wallet=CenterWallet.objects.first(),
+                    amount=total_price,
+                    order=food_order
+                )
+                
+                return Response({'message': 'Food order placed successfully', 'order_id': food_order.id}, status=status.HTTP_201_CREATED)
+            else:
+                return Response(food_list_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request, service_pk):
+        service = get_object_or_404(Service,id = service_pk)
+        if service.service_type.type != 'food':
+            return Response({'message':'no such service'},status=400)
+        orders = Order.objects.filter(service=service,event__user=request.user).all()
+        serializer = OrderSerializer(orders,many=True)
+        return Response(serializer.data, status = 200)
+
+class RejectFoodOrderAPIView(APIView):
+    def post(self, request,service_pk=None, order_pk=None):
+        service = get_object_or_404(Service, id = service_pk)
+        order = get_object_or_404(Order, id = order_pk, service = service)
+        if request.user == order.service.service_provider:
+            if order.status == 'Pending':
+                order.status = 'Rejected'
+                order_price = float(order.total_price) 
+                fee = order_price* FEE_PERCENTAGE
+                CenterWallet.objects.first().transfer_funds(target_wallet=order.event.user.get_wallet(),amount=order_price+fee,order=order)   
+                order.save()
+                return Response({'message':'the reservation has been rejected successfully'}, status= 200) 
+            else:
+                return Response({'message':'you can not reject this reservation'}, status= 400) 
+        else:
+            raise PermissionDenied('you do not have permission to perform this action')
+        
+
+class ConfirmFoodOrderAPIView(APIView):
+    # when service provider confirm 
+    # service_provider.get_wallet().transfer_funds(target_wallet = CenterWallet.objects.first(),amount = cost * 0.5, reservation = service_reservation)
+    def post(self, request, service_pk=None, order_pk=None):
+        service = get_object_or_404(Service, id = service_pk)
+        order = get_object_or_404(Order, id = order_pk)
+        if request.user == order.service.service_provider:
+            if order.status == 'Pending':
+                order.status = 'Confirmed'
+                if  float(order.total_price) * RESERVATION_PROTECTION_PERCENTAGE < request.user.get_wallet().balance:
+                    request.user.get_wallet().transfer_funds(CenterWallet.objects.first(),
+                                                            amount = float(order.total_price) * RESERVATION_PROTECTION_PERCENTAGE,
+                                                            order = order)
+                    order.save()
+                    return Response({'message':'the order has been confirmed successfully'}, status= 200)
+                return Response({'message':'Insufficient funds'}, status= 400)
+            else: return Response({'message':'you can not confirm this order'}, status= 403)
+        else:
+            raise PermissionDenied('you do not have permission to perform this action')
+        
+
+class CancelFoodOrder(APIView):
+    def post(self, request,service_pk=None, order_pk=None):
+        service = get_object_or_404(Service, id = service_pk)
+        order = get_object_or_404(Order, id = order_pk)
+        order_price = float(order.total_price)
+        compensation,refund = get_refund_after_cancelling_order(request.user, order)
+        if order.status != 'Confirmed':
+            return Response({'message':'you can not cancel this order'}, status= 400)
+        if request.user == order.service.service_provider:
+            CenterWallet.objects.first().transfer_funds(target_wallet=order.event.user.get_wallet(),
+                                                        amount=refund,
+                                                        order=order)
+            # we will return the fee to the service provider + the amount of money left after compensation
+            #the remaining_money_after_compensation is the whole amount of money paid for compensation - the money that actually been paid as compensation
+            remaining_money_after_compensation = order_price*RESERVATION_PROTECTION_PERCENTAGE - compensation
+            CenterWallet.objects.first().transfer_funds(target_wallet=order.service.service_provider.get_wallet(),
+                                                        amount=order_price*RESERVATION_PROTECTION_PERCENTAGE*FEE_PERCENTAGE + remaining_money_after_compensation,
+                                                        order=order)
+            order.status = 'Cancelled'  
+            order.save()   
+            return Response({'message':'the order has been cancelled successfully'}, status= 200)
+        elif request.user == order.event.user:
+            CenterWallet.objects.first().transfer_funds(target_wallet=order.service.service_provider.get_wallet(),
+                                                        amount=refund,
+                                                        order=order)
+            # we will return the fee to the user
+            remaining_money_after_compensation = order_price - compensation
+            CenterWallet.objects.first().transfer_funds(target_wallet=order.event.user.get_wallet(),
+                                                        amount=order_price*FEE_PERCENTAGE + remaining_money_after_compensation, # if compensation is zero then the user will get all money back
+                                                        order=order)
+            order.status = 'Cancelled'  
+            order.save()   
+            return Response({'message':'the reservation has been cancelled successfully'}, status= 200)
+        else:
+            return Response({'message':'you can not perform this actino'}, status= 403)
+        

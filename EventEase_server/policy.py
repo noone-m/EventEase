@@ -6,7 +6,7 @@ the finantial policy of the app is written here
 import typing
 from datetime import datetime, timedelta
 from accounts.models import User
-from services.models import ServiceReservation
+from services.models import Reservation, Order
 from zoneinfo import ZoneInfo
 from django.conf import settings
 
@@ -51,13 +51,13 @@ def get_compensation_percentage(time_passed:datetime,whole_time_span:datetime):
     elif 90 < time_passed_to_the_whole_time <= 100:
         return 0.36
     
-def get_refund_after_cancelling_service_reservation(user:User,reservation:ServiceReservation):
+def get_refund_after_cancelling_reservation(user:User,reservation:Reservation):
     from wallet.models import CenterWallet
     """
     return how much refund should be if user or service provider has cancelled a service reservation
     Args:
         user (User): the user who made the cancellation
-        reservation (ServiceReservation): the service reservation
+        reservation (Reservation): the service reservation
 
     Returns:
         refund(number) : the value of refund
@@ -77,7 +77,11 @@ def get_refund_after_cancelling_service_reservation(user:User,reservation:Servic
     reservation_cost = float(reservation.cost)
     compensation_percentage = get_compensation_percentage(time_passed,whole_time_span)
     compensation_value = reservation_cost * compensation_percentage
-    if user == reservation.service.service_provider:
+    try:
+        service = reservation.service
+    except Exception:
+        service = reservation.decor_service
+    if user == service.service_provider:
         # the returns will follow this pattern money paid + fee paid + refund
         if time_to_reservation <= timedelta(hours=24):
             compensation_value = reservation_cost  * RESERVATION_PROTECTION_PERCENTAGE
@@ -86,3 +90,40 @@ def get_refund_after_cancelling_service_reservation(user:User,reservation:Servic
         if time_to_reservation <= timedelta(hours=24):
             compensation_value = reservation_cost * RESERVATION_PROTECTION_PERCENTAGE
         return compensation_value, RESERVATION_PROTECTION_PERCENTAGE * reservation_cost + RESERVATION_PROTECTION_PERCENTAGE* reservation_cost * FEE_PERCENTAGE + compensation_value
+    
+
+def get_refund_after_cancelling_order(user:User,order:Order):
+    from wallet.models import CenterWallet
+    """
+    return how much refund should be if user or service provider has cancelled an order
+    Args:
+        user (User): the user who made the cancellation
+        order (Order): the service reservation
+
+    Returns:
+        refund(number) : the value of refund
+        compensation(number) : the value of compensation
+    """
+    due_date = order.due_date
+    order_made_at = order.created_at
+    timezone = ZoneInfo(settings.TIME_ZONE)
+
+    # Convert both datetimes to the same timezone
+    order_made_at = order_made_at.astimezone(timezone)
+    cancellation_time = datetime.now(timezone)
+    time_passed = cancellation_time - order_made_at # the time that has passed when the order was made
+    time_to_order = due_date - cancellation_time # how much time there is to reach the order
+    whole_time_span = due_date - order_made_at # the whole time span between when the order is made and when it will took place
+    order_cost = float(order.total_price)
+    compensation_percentage = get_compensation_percentage(time_passed,whole_time_span)
+    compensation_value = order_cost * compensation_percentage
+    service = order.service
+    if user == service.service_provider:
+        # the returns will follow this pattern money paid + fee paid + refund
+        if time_to_order <= timedelta(hours=24):
+            compensation_value = order_cost  * RESERVATION_PROTECTION_PERCENTAGE
+        return compensation_value, order_cost + order_cost*FEE_PERCENTAGE  + compensation_value
+    elif user == order.event.user: 
+        if time_to_order <= timedelta(hours=24):
+            compensation_value = order_cost * RESERVATION_PROTECTION_PERCENTAGE
+        return compensation_value, RESERVATION_PROTECTION_PERCENTAGE * order_cost + RESERVATION_PROTECTION_PERCENTAGE* order_cost * FEE_PERCENTAGE + compensation_value

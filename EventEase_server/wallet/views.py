@@ -55,7 +55,7 @@ class DebitWalletView(APIView):
         amount = request.data.get('amount')
         
         if not amount:
-            return Response({'error': 'wallet_id and amount are required'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'amount is required'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             amount = float(amount)

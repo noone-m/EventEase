@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from accounts.permissions import IsAdminUser,IsOwner,IsOwnerOrAdminUser,IsServiceOwnerOrAdmin, DefaultOrIsAdminUser
 from reviews.models import Review
 from services.models import Service
@@ -96,4 +97,15 @@ class SolveReportServiceAPIView(APIView):
         report.solved_by = request.user
         report.save()
         return Response(status=status.HTTP_200_OK)
+    
 
+class ListAllReviewsReports(ListAPIView):
+    permission_classes = [IsAdminUser]
+    queryset = ReportReview.objects.all()
+    serializer_class = ReportReviewSerializer
+
+
+class ListAllServicesReports(ListAPIView):
+    permission_classes = [IsAdminUser]
+    queryset = ReportService.objects.all()
+    serializer_class = ReportServiceSerializer

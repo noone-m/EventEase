@@ -4,15 +4,17 @@ ServiceViewSet,DeclineApplication,ServiceProviderApplicationDetailView,FoodTypeA
 DeleteRetrieveFoodTypeAPIView,FoodAPIView,LocationDetailView,DecorAPIView,MyServiceAPIView,
 MyServiceTypeAPIView, ServiceReservationAPIView,RejectServiceReservationAPIView,ListRetrieveFoodAPIView,
 ConfirmServiceReservationAPIView, CancelServiceReservation, ServicesReservationsAPIView, 
-DecorsReservationsAPIView)
+DecorsReservationsAPIView, DecorsReservationAPIView, ConfirmDecorsServiceReservationAPIView,
+RejectDecorsServiceReservationAPIView, CancelDecorsServiceReservation, FoodOrderAPIView, RejectFoodOrderAPIView,
+ConfirmFoodOrderAPIView, ListOrdersAPIview, CancelFoodOrder)
 
 from photos.views import (ServicePhotosAPIView,ServiceProfilePhotoAPIView,FoodPhotosAPIView,MainFoodPhotoAPIView
 ,DecorPhotosAPIView,MainDecorPhotoAPIView)
 
 from locations.views import AddressViewSet,LocationViewSet
 
-from reports.views import ReportReviewAPIView,SolveReportReviewAPIView,ReportServiceAPIView,SolveReportServiceAPIView
-
+from reports.views import (ReportReviewAPIView,SolveReportReviewAPIView,ReportServiceAPIView,SolveReportServiceAPIView,
+ListAllReviewsReports, ListAllServicesReports)
 from videos.views import VideoListCreateAPIView,VideoRetrieveDestroyAPIView
 
 from reviews.views import ReviewListCreateAPIView,ReviewUpdateDestroyAPIView
@@ -39,6 +41,7 @@ urlpatterns = [
     path('my-service/type',MyServiceTypeAPIView.as_view()),
     path('services-reservations/',ServicesReservationsAPIView.as_view()),
     path('decors-reservations/',DecorsReservationsAPIView.as_view()),
+    path('food-orders/',ListOrdersAPIview.as_view()),
 
     path('<int:service_pk>/photos/',ServicePhotosAPIView.as_view()),
     path('<int:service_pk>/location/',LocationDetailView.as_view()),
@@ -62,6 +65,7 @@ urlpatterns = [
     path('<int:service_pk>/decors/<int:decor_pk>/photos/', DecorPhotosAPIView.as_view(), name='food-list-create'),
     path('<int:service_pk>/decors/<int:decor_pk>/photos/<int:photo_pk>/', DecorPhotosAPIView.as_view()),
     path('<int:service_pk>/decors/<int:decor_pk>/photos/main/', MainDecorPhotoAPIView.as_view()),
+
     path('<int:service_pk>/reviews/', ReviewListCreateAPIView.as_view()),
     path('<int:service_pk>/reviews/<int:review_pk>/', ReviewUpdateDestroyAPIView.as_view()),
     path('<int:service_pk>/reviews/<int:review_pk>/reports/', ReportReviewAPIView.as_view()),
@@ -72,6 +76,9 @@ urlpatterns = [
     path('<int:service_pk>/reports/<int:report_pk>/', ReportServiceAPIView.as_view()),
     path('<int:service_pk>/reports/<int:report_pk>/solve/',SolveReportServiceAPIView.as_view()),
 
+    path('reviews-reports/', ListAllReviewsReports.as_view()),
+    path('services-reports/', ListAllServicesReports.as_view()),
+
     path('<int:service_pk>/videos/',VideoListCreateAPIView.as_view()),   
     path('<int:service_pk>/videos/<int:video_pk>/',VideoRetrieveDestroyAPIView.as_view()), 
 
@@ -80,5 +87,16 @@ urlpatterns = [
     path('<int:service_pk>/reservations/<int:reservation_pk>/reject/',RejectServiceReservationAPIView.as_view()), 
     path('<int:service_pk>/reservations/<int:reservation_pk>/confirm/',ConfirmServiceReservationAPIView.as_view()),
     path('<int:service_pk>/reservations/<int:reservation_pk>/cancel/',CancelServiceReservation.as_view()), 
+
+    path('<int:service_pk>/decors-reservations/', DecorsReservationAPIView.as_view()),
+    path('<int:service_pk>/decors-reservations/<int:reservation_pk>/reject/', RejectDecorsServiceReservationAPIView.as_view()),
+    path('<int:service_pk>/decors-reservations/<int:reservation_pk>/confirm/', ConfirmDecorsServiceReservationAPIView.as_view()), 
+    path('<int:service_pk>/decors-reservations/<int:reservation_pk>/cancel/', CancelDecorsServiceReservation.as_view()), 
+
+    path('<int:service_pk>/food-order/',FoodOrderAPIView.as_view()),
+    path('<int:service_pk>/food-order/<int:order_pk>/reject/', RejectFoodOrderAPIView.as_view()),
+    path('<int:service_pk>/food-order/<int:order_pk>/confirm/', ConfirmFoodOrderAPIView.as_view()),
+    path('<int:service_pk>/food-order/<int:order_pk>/cancel/', CancelFoodOrder.as_view()),
+
     path('',include(router.urls)),
 ] 

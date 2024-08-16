@@ -3,8 +3,10 @@ from django.http import FileResponse
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework import status
 from django.conf import settings
 import os
+import requests
 
 class ProtectedMediaView(APIView):
     permission_classes = [IsAuthenticated]
@@ -19,3 +21,5 @@ class ProtectedMediaView(APIView):
 
         # Return the file as a response
         return FileResponse(open(file_path, 'rb'))
+
+

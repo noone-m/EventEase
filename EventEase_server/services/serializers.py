@@ -6,7 +6,7 @@ from accounts.serializers import AdminUserSerializer
 from photos.serializers import ServicePhotosSerializers
 from .models import (FoodService, ServiceReservation, ServiceType, ServiceProviderApplication, FavoriteService, Service, DJService, Food
 , FoodType, FoodTypeService, FoodServiceFood, Venue, PhotoGrapherService, EntertainementService, Decor,
-DecorEventType,DecorationService, DecorsReservation, Reservation)
+DecorEventType,DecorationService, DecorsReservation, Reservation,Order,FoodInOrder)
 from rest_framework import serializers
 
 
@@ -188,8 +188,29 @@ class DecorsReservationSerializer(serializers.ModelSerializer):
         # decors = 
         model = DecorsReservation
         fields = '__all__'
-        read_only_fields = ['id', 'service', 'cost', 'status']
+        read_only_fields = ['id', 'decor_service', 'cost', 'status']
 
 
 class NewFoodTypeSerializer(serializers.Serializer):
     new_type = serializers.IntegerField()
+
+class DecorsQuantitySerializer(serializers.Serializer):
+    decor_id = serializers.IntegerField()
+    quantity = serializers.IntegerField()
+
+class DecorsListSerializer(serializers.Serializer):
+    decors = serializers.ListField(child=DecorsQuantitySerializer())
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta: 
+        model = Order
+        fields = '__all__'
+        read_only_fields = ['id', 'service', 'status', 'total_price', 'created_at']
+
+class FoodsQuantitySerializer(serializers.Serializer):
+    food_id = serializers.IntegerField()
+    quantity = serializers.IntegerField()
+
+class FoodsListSerializer(serializers.Serializer):
+    foods = serializers.ListField(child=FoodsQuantitySerializer())

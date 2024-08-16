@@ -155,6 +155,7 @@ class ServiceReservation(Reservation):
     def __str__(self):
         return f"ServiceReservation for {self.service} on {self.start_time} to {self.end_time}"
 
+
 class DecorsReservation(Reservation):
     """
     Model for reserving decors
@@ -170,22 +171,17 @@ class DecorsInReservation(models.Model):
     decor = models.ForeignKey(Decor,on_delete=models.CASCADE)
     quantity = models.IntegerField()
     start_time = models.DateTimeField()
-    end_time = models.DateTimeField
+    end_time = models.DateTimeField()
     price = models.FloatField()
 
 
 class Order(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     service = models.ForeignKey(Service, on_delete= models.CASCADE)
-    status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Confirmed', 'Confirmed'), ('Cancelled', 'Cancelled')])
+    status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Confirmed', 'Confirmed'), ('Cancelled', 'Cancelled'),('Rejected','Rejected')])
     total_price = models.FloatField()
-
-
-class DecorInOrder(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
-    decor = models.ForeignKey(Decor, on_delete=models.CASCADE)
-    quantity = models.IntegerField()
-    price = models.FloatField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    due_date= models.DateTimeField()
 
 
 class FoodInOrder(models.Model):
