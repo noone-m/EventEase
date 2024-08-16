@@ -137,7 +137,7 @@ class Reservation(models.Model):
     end_time = models.DateTimeField()
     status = models.CharField(
         max_length=20, 
-        choices=[('Pending', 'Pending'), ('Confirmed', 'Confirmed'), ('Cancelled', 'Cancelled'), ('Rejected','Rejected')], 
+        choices=[('Pending', 'Pending'), ('Confirmed', 'Confirmed'), ('Cancelled', 'Cancelled'), ('Rejected','Rejected'), ('Paid','Paid')], 
         default='Pending'
     )
     cost = models.DecimalField(max_digits=10, decimal_places=2)
@@ -178,7 +178,7 @@ class DecorsInReservation(models.Model):
 class Order(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     service = models.ForeignKey(Service, on_delete= models.CASCADE)
-    status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Confirmed', 'Confirmed'), ('Cancelled', 'Cancelled'),('Rejected','Rejected')])
+    status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Confirmed', 'Confirmed'), ('Cancelled', 'Cancelled'),('Rejected','Rejected'), ('Paid','Paid')])
     total_price = models.FloatField()
     created_at = models.DateTimeField(auto_now_add=True)
     due_date= models.DateTimeField()

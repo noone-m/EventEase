@@ -3,6 +3,8 @@ from django.db import models
 from accounts.models import User
 from locations.models import Location
 
+
+
 class EventType(models.Model):
     name = models.CharField(max_length=255)
 
@@ -15,7 +17,28 @@ class Event(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, default= 0.0)
-
+    
+    def get_all_paid_reservations(self):
+        from services.models import Reservation
+        reservations = Reservation.objects.filter(event=self,status='Paid').all()
+        return reservations
+    
+    def get_all__paid_orders(self):
+        from services.models import Order
+        orders = Order.objects.filter(event=self, status='Paid').all()
+        return orders
+    
+    def compute_total_cost(self):
+        total_cost = 0
+        reservations = self.get_all_paid_reservations()
+        orders = self.get_all__paid_orders()
+        for reservation in reservations:
+            total_cost = total_cost + float(reservation.cost)
+        for order in orders:
+            total_cost = total_cost + float(order.total_price)
+        self.total_cost = total_cost
+        self.save()
+        return self.total_cost
 
 class InvitationCardDesign(models.Model):
     image = models.ImageField(upload_to='pictures/card_design')

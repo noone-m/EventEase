@@ -6,7 +6,8 @@ MyServiceTypeAPIView, ServiceReservationAPIView,RejectServiceReservationAPIView,
 ConfirmServiceReservationAPIView, CancelServiceReservation, ServicesReservationsAPIView, 
 DecorsReservationsAPIView, DecorsReservationAPIView, ConfirmDecorsServiceReservationAPIView,
 RejectDecorsServiceReservationAPIView, CancelDecorsServiceReservation, FoodOrderAPIView, RejectFoodOrderAPIView,
-ConfirmFoodOrderAPIView, ListOrdersAPIview, CancelFoodOrder)
+ConfirmFoodOrderAPIView, ListOrdersAPIview, CancelFoodOrder, PayFoodOrder, PayDecorsServiceReservation,
+PayServiceReservation,)
 
 from photos.views import (ServicePhotosAPIView,ServiceProfilePhotoAPIView,FoodPhotosAPIView,MainFoodPhotoAPIView
 ,DecorPhotosAPIView,MainDecorPhotoAPIView)
@@ -87,16 +88,19 @@ urlpatterns = [
     path('<int:service_pk>/reservations/<int:reservation_pk>/reject/',RejectServiceReservationAPIView.as_view()), 
     path('<int:service_pk>/reservations/<int:reservation_pk>/confirm/',ConfirmServiceReservationAPIView.as_view()),
     path('<int:service_pk>/reservations/<int:reservation_pk>/cancel/',CancelServiceReservation.as_view()), 
+    path('<int:service_pk>/reservations/<int:reservation_pk>/pay/',PayServiceReservation.as_view()),
 
     path('<int:service_pk>/decors-reservations/', DecorsReservationAPIView.as_view()),
     path('<int:service_pk>/decors-reservations/<int:reservation_pk>/reject/', RejectDecorsServiceReservationAPIView.as_view()),
     path('<int:service_pk>/decors-reservations/<int:reservation_pk>/confirm/', ConfirmDecorsServiceReservationAPIView.as_view()), 
     path('<int:service_pk>/decors-reservations/<int:reservation_pk>/cancel/', CancelDecorsServiceReservation.as_view()), 
+    path('<int:service_pk>/decors-reservations/<int:reservation_pk>/pay/', PayDecorsServiceReservation.as_view()),
 
     path('<int:service_pk>/food-order/',FoodOrderAPIView.as_view()),
     path('<int:service_pk>/food-order/<int:order_pk>/reject/', RejectFoodOrderAPIView.as_view()),
     path('<int:service_pk>/food-order/<int:order_pk>/confirm/', ConfirmFoodOrderAPIView.as_view()),
     path('<int:service_pk>/food-order/<int:order_pk>/cancel/', CancelFoodOrder.as_view()),
+    path('<int:service_pk>/food-order/<int:order_pk>/pay/', PayFoodOrder.as_view()),
 
     path('',include(router.urls)),
 ] 

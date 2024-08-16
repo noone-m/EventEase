@@ -10,6 +10,7 @@ from locations.serializers import LocationSerializer
 from .models import EventType,Event,InvitationCardDesign,InvitationCard
 from .serializers import EventTypeSerializer, EventSerializer,InvitationCardDesignSerializer, InvitationCardSerializer
 from accounts.permissions import IsAdminUser,IsAuthenticated, IsOwner, IsOwnerOrAdminUser,Default
+from EventEase_server.utils import CustomPageNumberPagination
 
 class EventTypeViewSet(viewsets.ModelViewSet):
     queryset = EventType.objects.all()
@@ -39,8 +40,10 @@ class EventAPIView(APIView):
                 events = Event.objects.all()
             else:
                 events = Event.objects.filter(user = request.user)
-            serializer = EventSerializer(events, many = True)
-            return Response(serializer.data,status= status.HTTP_200_OK)
+            paginator = CustomPageNumberPagination()
+            paginated_queryset = paginator.paginate_queryset(events, request)
+            serializer = EventSerializer(paginated_queryset, many=True)
+            return paginator.get_paginated_response(serializer.data)
         
     def post(self,request, event_id = None):
         event_serializer = EventSerializer(data = request.data)

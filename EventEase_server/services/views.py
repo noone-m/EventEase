@@ -1,5 +1,6 @@
 import ast
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 import requests
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -311,8 +312,10 @@ class UserFavoriteServices(APIView):
 class ServiceViewSet(ModelViewSet):
     queryset = Service.objects.all()
     pagination_class = CustomPageNumberPagination
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend,SearchFilter)
     filterset_class = ServiceFilter
+    search_fields = ['name','description']
+    
 
     def get_serializer_class(self):
 
@@ -471,7 +474,7 @@ class FoodAPIView(APIView):
                 return Response({'message':'the service do not have such food'},status=400)
             serializer = FoodServiceFoodSerializer(food)
             return Response(serializer.data, status=status.HTTP_200_OK)            
-        foods = FoodServiceFood.objects.filter(foodService=service,food__food_type=food_type)
+        foods = FoodServiceFood.objects.filter(foodService=service,food__food_type=food_type).order_by('food__price')
         paginator = CustomPageNumberPagination()
         paginated_queryset = paginator.paginate_queryset(foods, request)
         serializer = FoodServiceFoodSerializer(paginated_queryset , many=True)
@@ -519,8 +522,17 @@ class ListRetrieveFoodAPIView(APIView):
             except FoodServiceFood.DoesNotExist:
                 return Response({'message':'this service does not have such food'},status=404)
             serializer = FoodServiceFoodSerializer(food)
-            return Response(serializer.data, status=status.HTTP_200_OK)         
+            return Response(serializer.data, status=status.HTTP_200_OK)
+          
         foods = FoodServiceFood.objects.filter(foodService=service)
+                # Get search query parameter
+        search_query = request.query_params.get('search', '')
+        if search_query:
+            foods = foods.filter(
+                Q(food__name__icontains=search_query) |  # Example: search by food name
+                Q(food__ingredients__icontains=search_query)  # Example: search by food ingredients
+            )       
+        
         if food_type_ids:
             foods = foods.filter(food__food_type__in = food_type_ids).distinct()
         paginator = CustomPageNumberPagination()
@@ -584,7 +596,12 @@ class DecorAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         
         decors = Decor.objects.filter(decor_service=service)
-
+        search_query = request.query_params.get('search', '')
+        if search_query:
+            decors = decors.filter(
+                Q(name__icontains=search_query) |  # Example: search by decor name
+                Q(description__icontains=search_query)  # Example: search by decor description
+            )    
         if event_type_ids:
             decors = decors.filter(decoreventtype__event_type__in=event_type_ids).distinct()
         paginator = CustomPageNumberPagination()
@@ -656,6 +673,16 @@ class ServiceReservationAPIView(APIView):
             event = serializer.validated_data.get('event')
             if event.user != request.user:
                 return Response({'message':'you do not own this event'}, status = status.HTTP_400_BAD_REQUEST)
+            # Check for overlapping reservations
+            overlapping_reservations = Reservation.objects.filter(
+                service=service
+            ).filter(
+                Q(start_time__lt=start_time, end_time__gt=start_time) |
+                Q(start_time__gt=start_time, start_time__lt=end_time)
+            )
+            if overlapping_reservations.exists():
+                raise ValidationError("This service is already reserved during the selected time frame.")
+        
             # check if it is in the event time range
             is_inside = inside_range(event.start_time,event.end_time,start_time,end_time)
             if not is_inside:
@@ -793,7 +820,24 @@ class CancelServiceReservation(APIView):
             return Response({'message':'the reservation has been cancelled successfully'}, status= 200)
         else:
             return Response({'message':'you can not perform this actino'}, status= 401)        
-      
+
+
+class PayServiceReservation(APIView):
+    def post(self, request,service_pk=None, reservation_pk=None):
+        service = get_object_or_404(Service,id=service_pk)
+        reservation = get_object_or_404(ServiceReservation,id=reservation_pk)
+        if service.service_type.type != 'decor':
+            return Response({'message':'the service shoud be decor service'},status=400)
+        if request.user != reservation.event.user:
+            return Response({'message':'you don not own this reservation'}, status=400)
+        CenterWallet.objects.first().transfer_funds(target_wallet=reservation.service.service_provider.get_wallet(),
+                                                    amount=float(reservation.cost)+float(reservation.cost)*RESERVATION_PROTECTION_PERCENTAGE,
+                                                    reservation=reservation)
+        reservation.status = 'Paid'
+        reservation.save()
+        reservation.event.compute_total_cost()
+        return Response({'message':f'reservation {reservation.id} paid successfully'},status=200)
+            
 
 class DecorsReservationAPIView(APIView):
     def post(self, request, service_pk):
@@ -805,12 +849,11 @@ class DecorsReservationAPIView(APIView):
         if decor_resrevation_serializer.is_valid():
             start_time = decor_resrevation_serializer.validated_data.get('start_time')
             end_time = decor_resrevation_serializer.validated_data.get('end_time')
-            event_id=decor_resrevation_serializer.validated_data.get('event')
-            event = get_object_or_404(Event,event_id)
+            event=decor_resrevation_serializer.validated_data.get('event')
             if request.user != event.user:
                 return Response({'message':'you do not own this event'},status=401)
             #  save reservation data
-            decors_reservation ,created= DecorsReservation.objects.get_or_create(event = event_id,
+            decors_reservation ,created= DecorsReservation.objects.get_or_create(event = event,
                                                     decor_service = decor_service,
                                                     start_time=start_time,
                                                     end_time=end_time,
@@ -833,7 +876,7 @@ class DecorsReservationAPIView(APIView):
                                                                                     quantity=quantity,
                                                                                     start_time=start_time,
                                                                                     end_time=end_time,
-                                                                                    price = float(decor.hourly_rate)*((end_time-start_time).total_seconds() / 3600))
+                                                                                    price = float(decor.hourly_rate)*((end_time-start_time).total_seconds() / 3600)*quantity)
                     decors_reservation.cost = float(decors_reservation.cost) + decors_in_reservation.price
                     decors_reservation.save()
                     processed_data.append([decor_id, quantity])
@@ -932,6 +975,24 @@ class CancelDecorsServiceReservation(APIView):
             return Response({'message':'the reservation has been cancelled successfully'}, status= 200)
         else:
             return Response({'message':'you can not perform this actino'}, status= 401)
+        
+
+class PayDecorsServiceReservation(APIView):
+    def post(self, request,service_pk=None, reservation_pk=None):
+        service = get_object_or_404(Service,id=service_pk)
+        reservation = get_object_or_404(DecorsReservation,id=reservation_pk)
+        print(service.service_type.type)
+        if service.service_type.type != 'decoration':
+            return Response({'message':'the service shoud be decor service'},status=400)
+        if request.user != reservation.event.user:
+            return Response({'message':'you don not own this reservation'}, status=400)
+        CenterWallet.objects.first().transfer_funds(target_wallet=reservation.decor_service.service_provider.get_wallet(),
+                                                    amount=float(reservation.cost)+float(reservation.cost)*RESERVATION_PROTECTION_PERCENTAGE,
+                                                    reservation=reservation)
+        reservation.status = 'Paid'
+        reservation.save()
+        reservation.event.compute_total_cost()
+        return Response({'message':f'reservation {reservation.id} paid successfully'},status=200)
         
 
 class FoodOrderAPIView(APIView):
@@ -1075,3 +1136,19 @@ class CancelFoodOrder(APIView):
         else:
             return Response({'message':'you can not perform this actino'}, status= 403)
         
+
+class PayFoodOrder(APIView):
+    def post(self, request,service_pk=None, order_pk=None):
+        service = get_object_or_404(Service,id=service_pk)
+        order = get_object_or_404(Order,id=order_pk)
+        if service.service_type.type != 'food':
+            return Response({'message':'the service shoud be food service'},status=400)
+        if request.user != order.event.user:
+            return Response({'message':'you don not own this order'}, status=400)
+        CenterWallet.objects.first().transfer_funds(target_wallet=order.service.service_provider.get_wallet(),
+                                                    amount=float(order.total_price)+float(order.total_price*RESERVATION_PROTECTION_PERCENTAGE),
+                                                    order=order)
+        order.status = 'Paid'
+        order.save()
+        order.event.compute_total_cost()
+        return Response({'message':f'order {order.id} paid successfully'},status=200)

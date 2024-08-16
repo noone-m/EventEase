@@ -26,12 +26,58 @@ from .models import OTP,User,PasswordChangeRequested,EmailVerified
 from .permissions import IsOwner,IsAdminUser,IsPhoneVerified
 from . import utils
 from .filters import UserFilter
+from rest_framework.throttling import BaseThrottle
 
+class LoginRateThrottle(BaseThrottle):
+    from rest_framework.throttling import BaseThrottle
+from django.utils import timezone
+from collections import defaultdict
 
+class LoginRateThrottle(BaseThrottle):
+    # This will store the request timestamps for each user or IP address
+    request_cache = defaultdict(list)
+    rate_limit = 3  
+    time_period = 3600  # Time period in seconds (1 hour)
+
+    def get_cache_key(self, request):
+        # Use the user's IP address or user ID as the cache key
+        return self.get_ident(request)
+
+    def allow_request(self, request, view):
+        # Get the current time
+        now = timezone.now()
+        
+        # Get the cache key for the current user or IP
+        cache_key = self.get_cache_key(request)
+
+        # Get the list of request timestamps
+        request_times = self.request_cache[cache_key]
+
+        # Clean up request times to only include those within the last hour
+        request_times = [timestamp for timestamp in request_times if (now - timestamp).total_seconds() < self.time_period]
+
+        # Update the cache with the cleaned list
+        self.request_cache[cache_key] = request_times
+
+        # Check if the user has made fewer than `rate_limit` requests in the last hour
+        if len(request_times) < self.rate_limit:
+            # If yes, allow the request and add the current timestamp to the list
+            self.request_cache[cache_key].append(now)
+            return True
+        else:
+            # If not, deny the request
+            return False
+
+    def wait(self):
+        # Return the number of seconds until the next request is allowed
+        return self.time_period  # 1 hour in seconds
+    
+    
 # throttle here for brute force
 class Login(ObtainAuthToken):
     permission_classes = [AllowAny]
     serializer_class = TokenSerializer
+    throttle_classes = [LoginRateThrottle]
     if coreapi_schema.is_enabled():
         schema = ManualSchema(
             fields=[
