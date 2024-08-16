@@ -17,7 +17,21 @@ class Event(models.Model):
     total_cost = models.DecimalField(max_digits=10, decimal_places=2, default= 0.0)
 
 
-class InvitationCard(models.Model):
-    event = models.ForeignKey(Event,on_delete=models.CASCADE)
-    invitation = models.TextField()
+class InvitationCardDesign(models.Model):
+    image = models.ImageField(upload_to='pictures/card_design')
+    image_width = models.IntegerField()
+    image_hieght = models.IntegerField()
+    width= models.IntegerField()
+    hight= models.IntegerField()
+    start_x = models.IntegerField()
+    start_y = models.IntegerField()
+
     
+class InvitationCard(models.Model):
+    design = models.ForeignKey(InvitationCardDesign,on_delete=models.CASCADE)
+    event = models.ForeignKey(Event,on_delete=models.CASCADE)
+    location = models.ForeignKey(Location, null=True, on_delete=models.SET_NULL)
+    text = models.TextField()
+    title = models.CharField(max_length=100)
+
+
