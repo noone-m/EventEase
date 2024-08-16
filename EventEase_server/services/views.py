@@ -662,7 +662,7 @@ class ServiceReservationAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             if request.user == service.service_provider:
-                reservation = ServiceReservation.objects.filter(service=service)
+                reservations = ServiceReservation.objects.filter(service=service)
             else :
                 reservations = ServiceReservation.objects.filter(service=service, event__user = request.user)
             status_param = request.query_params.get('status', None)

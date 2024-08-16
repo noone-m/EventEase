@@ -102,7 +102,6 @@ class Decor(models.Model):
     quantity  = models.IntegerField()
     available_quantity  = models.IntegerField()
     hourly_rate = models.DecimalField(max_digits=10, decimal_places=2,null = True)
-    price =  models.DecimalField(max_digits=10, decimal_places=2, null = True)
     description = models.TextField(null=True)
 
     def clean(self):
