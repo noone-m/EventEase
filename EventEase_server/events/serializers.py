@@ -9,9 +9,10 @@ class EventTypeSerializer(serializers.ModelSerializer):
 
 class EventSerializer(serializers.ModelSerializer):
     location = LocationSerializer(read_only = True)
+    event_type=EventTypeSerializer()
     class Meta:
         model = Event
-        fields = ['id', 'user', 'total_cost', 'location','name', 'start_time', 'end_time']
+        fields = ['id', 'user', 'total_cost', 'location','name', 'start_time', 'end_time', 'event_type']
         read_only_fields = ['id', 'total_cost', 'location', 'user']
 
 class InvitationCardDesignSerializer(serializers.ModelSerializer):

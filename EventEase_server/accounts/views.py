@@ -11,6 +11,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny,IsAuthenticated
 from rest_framework.authtoken.models import Token
+from rest_framework.filters import SearchFilter
 
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -235,8 +236,10 @@ class UserViewSet(ModelViewSet):
     queryset = User.objects.all()
     pagination_class = CustomPageNumberPagination
     serializer_class = AdminUserSerializer
-    filter_backends = [DjangoFilterBackend,]
+    filter_backends = [DjangoFilterBackend,SearchFilter]
     filterset_class = UserFilter
+    search_fields = ['first_name','last_name']
+
 
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy']:

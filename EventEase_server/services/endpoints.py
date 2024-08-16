@@ -91,6 +91,7 @@ urlpatterns = [
     path('<int:service_pk>/reservations/<int:reservation_pk>/pay/',PayServiceReservation.as_view()),
 
     path('<int:service_pk>/decors-reservations/', DecorsReservationAPIView.as_view()),
+    path('<int:service_pk>/decors-reservations/<int:reservation_pk>/',DecorsReservationAPIView.as_view()),
     path('<int:service_pk>/decors-reservations/<int:reservation_pk>/reject/', RejectDecorsServiceReservationAPIView.as_view()),
     path('<int:service_pk>/decors-reservations/<int:reservation_pk>/confirm/', ConfirmDecorsServiceReservationAPIView.as_view()), 
     path('<int:service_pk>/decors-reservations/<int:reservation_pk>/cancel/', CancelDecorsServiceReservation.as_view()), 

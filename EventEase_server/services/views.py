@@ -207,6 +207,11 @@ class ServiceProviderApplicationView(APIView):
             applications = ServiceProviderApplication.objects.all()
         else : 
             applications = ServiceProviderApplication.objects.filter(user = request.user)
+        status_param = request.query_params.get('status', None)
+        if status_param:
+            if status_param not in ['Pending', 'Approved', 'Rejected']:
+                return Response({'error': 'Invalid status value'}, status=status.HTTP_400_BAD_REQUEST)
+            applications = applications.filter(status=status_param)
         paginator = CustomPageNumberPagination()
         paginated_queryset = paginator.paginate_queryset(applications, request)
         serializer = ServiceProviderApplicationSerializer(paginated_queryset, many=True)
@@ -660,8 +665,14 @@ class ServiceReservationAPIView(APIView):
                 reservation = ServiceReservation.objects.filter(service=service)
             else :
                 reservations = ServiceReservation.objects.filter(service=service, event__user = request.user)
-            serializer = ServiceReservationSerializer(reservations, many=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            status_param = request.query_params.get('status', None)
+            if status_param:
+                reservations = reservations.filter(status=status_param)
+            paginator = CustomPageNumberPagination()
+            paginated_queryset = paginator.paginate_queryset(reservations, request)
+            serializer = ServiceReservationSerializer(paginated_queryset , many=True)
+            return paginator.get_paginated_response(serializer.data)    
+
         
 
     def post(self, request, service_pk,reservation_pk=None):
@@ -889,19 +900,28 @@ class DecorsReservationAPIView(APIView):
             else:
                 return Response(decor_list_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else: return Response(decor_resrevation_serializer.errors)
-        
-        # if reservation_pk is not None:
-        #     # Retrieve a specific reservation
-        #     reservation = get_object_or_404(DecorsReservation, id=reservation_pk, decor_service=service)
-        #     serializer = DecorsReservationSerializer(reservation)
-        #     return Response(serializer.data, status=status.HTTP_200_OK)
-        # else:
-        #     if request.user == service.service_provider:
-        #         reservations = DecorsReservation.objects.filter(decor_service=service)
-        #     else:
-        #         reservations = DecorsReservation.objects.filter(decor_service=service, event__user=request.user)
-        #     serializer = DecorsReservationSerializer(reservations, many=True)
-        #     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+    def get(self, request, service_pk, reservation_pk=None):
+        # Retrieve the service
+        service = get_object_or_404(Service, id=service_pk)
+        if reservation_pk is not None:
+            # Retrieve a specific reservation
+            reservation = get_object_or_404(DecorsReservation, id=reservation_pk, decor_service=service)
+            serializer = DecorsReservationSerializer(reservation)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            if request.user == service.service_provider:
+                reservation = DecorsReservation.objects.filter(decor_service=service)
+            else :
+                reservations = DecorsReservation.objects.filter(decor_service=service, event__user = request.user)
+            status_param = request.query_params.get('status', None)
+            if status_param:
+                reservations = reservations.filter(status=status_param)
+            paginator = CustomPageNumberPagination()
+            paginated_queryset = paginator.paginate_queryset(reservations, request)
+            serializer = ServiceReservationSerializer(paginated_queryset , many=True)
+            return paginator.get_paginated_response(serializer.data) 
 
   
 class RejectDecorsServiceReservationAPIView(APIView):
@@ -1056,14 +1076,27 @@ class FoodOrderAPIView(APIView):
         else:
             return Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    def get(self, request, service_pk):
+    def get(self, request, service_pk, order_pk=None):
+        # Retrieve the service
         service = get_object_or_404(Service,id = service_pk)
         if service.service_type.type != 'food':
             return Response({'message':'no such service'},status=400)
-        orders = Order.objects.filter(service=service,event__user=request.user).all()
-        serializer = OrderSerializer(orders,many=True)
-        return Response(serializer.data, status = 200)
-
+        if order_pk is not None:
+            order = get_object_or_404(Order, id=order_pk, service=service)
+            serializer = OrderSerializer(order)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            if request.user == service.service_provider:
+                orders = Order.objects.filter(service=service)
+            else :
+                orders = Order.objects.filter(service=service, event__user = request.user)
+            status_param = request.query_params.get('status', None)
+            if status_param:
+                orders = orders.filter(status=status_param)
+            paginator = CustomPageNumberPagination()
+            paginated_queryset = paginator.paginate_queryset(orders, request)
+            serializer = OrderSerializer(paginated_queryset , many=True)
+            return paginator.get_paginated_response(serializer.data) 
 class RejectFoodOrderAPIView(APIView):
     def post(self, request,service_pk=None, order_pk=None):
         service = get_object_or_404(Service, id = service_pk)

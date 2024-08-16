@@ -1,5 +1,5 @@
 from django_filters import rest_framework as filters
-from .models import Service
+from .models import Service, ServiceProviderApplication
 
 
 class ServiceFilter(filters.FilterSet):
@@ -15,4 +15,12 @@ class ServiceFilter(filters.FilterSet):
                 'location__address__village_city',
                 'location__address__street',
                 'service_type']
+        
+
+class ServiceProviderApplicationFilter(filters.FilterSet):
+    class Meta:
+        model = ServiceProviderApplication
+        service_type = filters.CharFilter(field_name='service_type__type', lookup_expr='exact')
+        fields = ['status']
+
 
