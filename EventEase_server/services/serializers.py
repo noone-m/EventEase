@@ -27,7 +27,9 @@ class FoodServiceSerializer(serializers.ModelSerializer):
 
 
 class ServiceProviderApplicationSerializer(serializers.ModelSerializer):
-
+    location = LocationSerializer(read_only=True)
+    user= AdminUserSerializer(read_only=True)
+    service_type = ServiceTypeSerializer(read_only=True)
     class Meta:
         model = ServiceProviderApplication
         fields = '__all__'
