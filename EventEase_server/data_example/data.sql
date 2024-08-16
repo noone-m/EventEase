@@ -66,6 +66,7 @@ COPY public.locations_address (id, street, village_city, state, country) FROM st
 11	\N	Biyad	Rif Dimashq Governorate	Syria
 12	\N	`Assal al Ward	Rif Dimashq Governorate	Syria
 13	Southern Bypass	Ash-Shaghour Municipality	Damascus Governorate	Syria
+14	\N	龙岗村	Jiangsu	China
 \.
 
 
@@ -87,6 +88,7 @@ COPY public.locations_location (id, latitude, longitude, address_id) FROM stdin;
 11	33.450350000	36.399200000	11
 12	33.850350000	36.399200000	12
 13	33.492790000	36.317690000	13
+14	34.040000000	118.150000000	14
 \.
 
 
@@ -217,6 +219,7 @@ COPY public.django_content_type (id, app_label, model) FROM stdin;
 56	wallet	centerwallet
 57	services	reservation
 58	wallet	userwallet
+59	events	invitationcarddesign
 \.
 
 
@@ -461,6 +464,10 @@ COPY public.auth_permission (id, name, content_type_id, codename) FROM stdin;
 234	Can change user wallet	58	change_userwallet
 235	Can delete user wallet	58	delete_userwallet
 236	Can view user wallet	58	view_userwallet
+237	Can add invitation card design	59	add_invitationcarddesign
+238	Can change invitation card design	59	change_invitationcarddesign
+239	Can delete invitation card design	59	delete_invitationcarddesign
+240	Can view invitation card design	59	view_invitationcarddesign
 \.
 
 
@@ -613,6 +620,8 @@ COPY public.django_migrations (id, app, name, applied) FROM stdin;
 101	services	0028_decorsinreservation_end_time	2024-08-15 13:07:51.403851+03
 102	services	0029_order_created_at_order_due_date	2024-08-15 15:34:57.38823+03
 103	services	0030_alter_order_status	2024-08-15 20:02:17.13149+03
+104	events	0005_invitationcarddesign_and_more	2024-08-16 09:12:02.225385+03
+105	events	0006_invitationcard_design	2024-08-16 09:33:00.657988+03
 \.
 
 
@@ -644,8 +653,20 @@ COPY public.events_eventtype (id, name) FROM stdin;
 --
 
 COPY public.events_event (id, name, start_time, end_time, total_cost, location_id, user_id, event_type_id) FROM stdin;
+4	graduation party	2024-08-20 15:00:00+03	2024-08-22 15:00:00+03	2000000.00	13	3	\N
 3	ramez graduation party	2024-09-11 23:00:00+03	2024-09-12 01:00:00+03	0.00	12	6	\N
-4	graduation party	2024-08-20 15:00:00+03	2024-08-22 15:00:00+03	0.00	13	3	\N
+5	asdf	2020-12-12 03:00:00+03	2020-12-14 03:00:00+03	0.00	14	3	\N
+6	asdf	2020-12-12 03:00:00+03	2020-12-14 03:00:00+03	0.00	14	3	2
+7	asdf	2020-12-12 03:00:00+03	2020-12-14 03:00:00+03	0.00	14	3	2
+\.
+
+
+--
+-- Data for Name: events_invitationcarddesign; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.events_invitationcarddesign (id, image, image_width, image_hieght, width, hight, start_x, start_y) FROM stdin;
+2	pictures/card_design/4_vr6qLfv.jpg	400	600	300	200	20	20
 \.
 
 
@@ -653,7 +674,8 @@ COPY public.events_event (id, name, start_time, end_time, total_cost, location_i
 -- Data for Name: events_invitationcard; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.events_invitationcard (id, invitation, event_id) FROM stdin;
+COPY public.events_invitationcard (id, text, event_id, location_id, title, design_id) FROM stdin;
+1	we hope you come	4	10	invitation	2
 \.
 
 
@@ -835,6 +857,8 @@ COPY public.services_decoreventtype (id, event_type_id, decor_id) FROM stdin;
 COPY public.services_decorsinreservation (id, quantity, start_time, price, decor_id, decors_reservation_id, end_time) FROM stdin;
 4	10	2024-08-20 15:00:00+03	480	7	16	2024-08-22 15:00:00+03
 5	10	2024-08-20 15:00:00+03	480	7	18	2024-08-22 15:00:00+03
+6	10	2024-08-20 15:00:00+03	10	7	19	2024-08-20 16:00:00+03
+7	10	2024-08-20 15:00:00+03	100	7	20	2024-08-20 16:00:00+03
 \.
 
 
@@ -849,6 +873,8 @@ COPY public.services_reservation (id, start_time, end_time, status, cost, event_
 16	2024-08-20 15:00:00+03	2024-08-22 15:00:00+03	Rejected	480.00	4	2024-08-15 13:20:34.885198+03	2024-08-15 13:33:44.914154+03
 17	2024-08-20 15:00:00+03	2024-08-20 17:00:00+03	Pending	200000.00	4	2024-08-15 13:43:48.168898+03	2024-08-15 13:43:48.168898+03
 18	2024-08-20 15:00:00+03	2024-08-22 15:00:00+03	Cancelled	480.00	4	2024-08-15 13:44:24.945964+03	2024-08-15 13:57:59.507007+03
+19	2024-08-20 15:00:00+03	2024-08-20 16:00:00+03	Pending	10.00	4	2024-08-16 10:33:00.214197+03	2024-08-16 10:33:00.247177+03
+20	2024-08-20 15:00:00+03	2024-08-20 16:00:00+03	Confirmed	100.00	4	2024-08-16 10:40:11.425635+03	2024-08-16 10:47:28.877543+03
 \.
 
 
@@ -861,6 +887,8 @@ COPY public.services_decorsreservation (decor_service_id, reservation_ptr_id) FR
 9	15
 9	16
 9	18
+9	19
+9	20
 \.
 
 
@@ -903,6 +931,7 @@ COPY public.services_order (id, status, total_price, event_id, service_id, creat
 9	Pending	2000000	4	1	2024-08-15 18:50:27.180359+03	2024-08-20 18:00:00+03
 10	Rejected	2000000	4	1	2024-08-15 18:51:19.139599+03	2024-08-20 18:00:00+03
 11	Cancelled	2000000	4	1	2024-08-15 20:24:32.103785+03	2024-08-20 15:00:00+03
+12	Paid	2000000	4	1	2024-08-16 10:01:14.103454+03	2024-08-20 15:00:00+03
 \.
 
 
@@ -917,6 +946,7 @@ COPY public.services_foodinorder (id, quantity, price, food_id, order_id) FROM s
 4	10	2000000	7	9
 5	10	2000000	7	10
 6	10	2000000	7	11
+7	10	2000000	7	12
 \.
 
 
@@ -1002,15 +1032,15 @@ COPY public.videos_video (id, file, uploaded_at, service_id) FROM stdin;
 --
 
 COPY public.wallet_wallet (id, balance, created_at, updated_at) FROM stdin;
-2	1050000.00	2024-07-31 16:23:55.304341+03	2024-08-15 23:27:56.008679+03
-1	208488.00	2024-07-31 16:14:58.113705+03	2024-08-15 23:27:56.024942+03
 6	0.00	2024-07-31 16:26:06.364674+03	2024-08-06 12:07:00.883477+03
 7	0.00	2024-08-02 18:53:56.307738+03	2024-08-02 18:53:56.325296+03
 8	0.00	2024-08-02 19:01:48.397047+03	2024-08-02 19:01:48.399001+03
 9	0.00	2024-08-03 20:55:38.053288+03	2024-08-03 20:55:38.08067+03
-3	2300000.00	2024-07-31 16:25:19.425802+03	2024-08-15 23:27:56.02894+03
+2	3000000.00	2024-07-31 16:23:55.304341+03	2024-08-16 10:03:02.607969+03
 4	300000.00	2024-07-31 16:25:37.956423+03	2024-08-14 23:46:33.694122+03
-5	500.00	2024-07-31 16:25:50.369557+03	2024-08-15 13:57:59.500013+03
+3	199884.50	2024-07-31 16:25:19.425802+03	2024-08-16 10:40:11.593534+03
+1	358506.00	2024-07-31 16:14:58.113705+03	2024-08-16 10:52:53.705664+03
+5	597.50	2024-07-31 16:25:50.369557+03	2024-08-16 10:52:53.724651+03
 \.
 
 
@@ -1095,6 +1125,27 @@ COPY public.wallet_transaction (id, amount, transaction_type, made_at, receiver_
 145	-2100000.00	debit	2024-08-15 23:27:56.027942+03	\N	\N	1	\N	11	\N
 146	2100000.00	credit	2024-08-15 23:27:56.03194+03	\N	\N	3	\N	11	\N
 147	-2100000.00	transfer	2024-08-15 23:27:56.032939+03	3	1	1	0.00	11	\N
+148	-2100000.00	debit	2024-08-16 10:01:14.241773+03	\N	\N	3	\N	12	\N
+149	2100000.00	credit	2024-08-16 10:01:14.288896+03	\N	\N	1	\N	12	\N
+150	-2100000.00	transfer	2024-08-16 10:01:14.290895+03	1	3	3	100000.00	12	\N
+151	-1050000.00	debit	2024-08-16 10:01:49.78671+03	\N	\N	2	\N	12	\N
+152	1050000.00	credit	2024-08-16 10:01:49.7892+03	\N	\N	1	\N	12	\N
+153	-1050000.00	transfer	2024-08-16 10:01:49.7902+03	1	2	2	50000.00	12	\N
+154	-3000000.00	debit	2024-08-16 10:03:02.604971+03	\N	\N	1	\N	12	\N
+155	3000000.00	credit	2024-08-16 10:03:02.610486+03	\N	\N	2	\N	12	\N
+156	-3000000.00	transfer	2024-08-16 10:03:02.611993+03	2	1	1	0.00	12	\N
+157	-10.50	debit	2024-08-16 10:33:00.261167+03	\N	\N	3	\N	\N	19
+158	10.50	credit	2024-08-16 10:33:00.466041+03	\N	\N	1	\N	\N	19
+159	-10.50	transfer	2024-08-16 10:33:00.467041+03	1	3	3	0.50	\N	19
+160	-105.00	debit	2024-08-16 10:40:11.595537+03	\N	\N	3	\N	\N	20
+161	105.00	credit	2024-08-16 10:40:11.624713+03	\N	\N	1	\N	\N	20
+162	-105.00	transfer	2024-08-16 10:40:11.625712+03	1	3	3	5.00	\N	20
+163	-52.50	debit	2024-08-16 10:47:28.78493+03	\N	\N	5	\N	\N	20
+164	52.50	credit	2024-08-16 10:47:28.86955+03	\N	\N	1	\N	\N	20
+165	-52.50	transfer	2024-08-16 10:47:28.870547+03	1	5	5	2.50	\N	20
+166	-150.00	debit	2024-08-16 10:52:53.708662+03	\N	\N	1	\N	\N	20
+167	150.00	credit	2024-08-16 10:52:53.72665+03	\N	\N	5	\N	\N	20
+168	-150.00	transfer	2024-08-16 10:52:53.727651+03	5	1	1	0.00	\N	20
 \.
 
 
@@ -1103,13 +1154,13 @@ COPY public.wallet_transaction (id, amount, transaction_type, made_at, receiver_
 --
 
 COPY public.wallet_userwallet (wallet_ptr_id, user_id) FROM stdin;
-5	5
 7	7
 8	8
 9	10
 2	2
-3	3
 6	6
+3	3
+5	5
 4	4
 \.
 
@@ -1174,7 +1225,7 @@ SELECT pg_catalog.setval('public.auth_group_permissions_id_seq', 1, false);
 -- Name: auth_permission_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.auth_permission_id_seq', 236, true);
+SELECT pg_catalog.setval('public.auth_permission_id_seq', 240, true);
 
 
 --
@@ -1188,21 +1239,21 @@ SELECT pg_catalog.setval('public.django_admin_log_id_seq', 1, false);
 -- Name: django_content_type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.django_content_type_id_seq', 58, true);
+SELECT pg_catalog.setval('public.django_content_type_id_seq', 59, true);
 
 
 --
 -- Name: django_migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.django_migrations_id_seq', 103, true);
+SELECT pg_catalog.setval('public.django_migrations_id_seq', 105, true);
 
 
 --
 -- Name: events_event_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.events_event_id_seq', 4, true);
+SELECT pg_catalog.setval('public.events_event_id_seq', 7, true);
 
 
 --
@@ -1216,21 +1267,28 @@ SELECT pg_catalog.setval('public.events_eventtype_id_seq', 8, true);
 -- Name: events_invitationcard_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.events_invitationcard_id_seq', 1, false);
+SELECT pg_catalog.setval('public.events_invitationcard_id_seq', 1, true);
+
+
+--
+-- Name: events_invitationcarddesign_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('public.events_invitationcarddesign_id_seq', 2, true);
 
 
 --
 -- Name: locations_address_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.locations_address_id_seq', 13, true);
+SELECT pg_catalog.setval('public.locations_address_id_seq', 14, true);
 
 
 --
 -- Name: locations_location_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.locations_location_id_seq', 13, true);
+SELECT pg_catalog.setval('public.locations_location_id_seq', 14, true);
 
 
 --
@@ -1328,7 +1386,7 @@ SELECT pg_catalog.setval('public.services_decoretype_id_seq', 8, true);
 -- Name: services_decorsinreservation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_decorsinreservation_id_seq', 5, true);
+SELECT pg_catalog.setval('public.services_decorsinreservation_id_seq', 7, true);
 
 
 --
@@ -1349,7 +1407,7 @@ SELECT pg_catalog.setval('public.services_food_id_seq', 7, true);
 -- Name: services_foodinorder_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_foodinorder_id_seq', 6, true);
+SELECT pg_catalog.setval('public.services_foodinorder_id_seq', 7, true);
 
 
 --
@@ -1377,14 +1435,14 @@ SELECT pg_catalog.setval('public.services_foodtypeservice_id_seq', 5, true);
 -- Name: services_order_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_order_id_seq', 11, true);
+SELECT pg_catalog.setval('public.services_order_id_seq', 12, true);
 
 
 --
 -- Name: services_reservation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_reservation_id_seq', 18, true);
+SELECT pg_catalog.setval('public.services_reservation_id_seq', 20, true);
 
 
 --
@@ -1419,7 +1477,7 @@ SELECT pg_catalog.setval('public.videos_video_id_seq', 1, true);
 -- Name: wallet_transaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.wallet_transaction_id_seq', 147, true);
+SELECT pg_catalog.setval('public.wallet_transaction_id_seq', 168, true);
 
 
 --
