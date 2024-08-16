@@ -241,7 +241,7 @@ class UserViewSet(ModelViewSet):
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy']:
             self.permission_classes = [IsAdminUser|IsOwner]
-        elif self.action in['list','create']:
+        elif self.action in['list','create', 'retrieve']:
             self.permission_classes = [IsAdminUser]
         else:
             pass
