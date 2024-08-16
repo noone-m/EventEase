@@ -65,6 +65,7 @@ COPY public.locations_address (id, street, village_city, state, country) FROM st
 10	\N	Rashaya	Beqaa Governorate	Lebanon
 11	\N	Biyad	Rif Dimashq Governorate	Syria
 12	\N	`Assal al Ward	Rif Dimashq Governorate	Syria
+13	Southern Bypass	Ash-Shaghour Municipality	Damascus Governorate	Syria
 \.
 
 
@@ -85,6 +86,7 @@ COPY public.locations_location (id, latitude, longitude, address_id) FROM stdin;
 10	33.450350000	35.899200000	10
 11	33.450350000	36.399200000	11
 12	33.850350000	36.399200000	12
+13	33.492790000	36.317690000	13
 \.
 
 
@@ -607,6 +609,10 @@ COPY public.django_migrations (id, app, name, applied) FROM stdin;
 97	services	0025_reservation_created_at_reservation_updated_at	2024-08-04 09:29:02.834508+03
 98	services	0026_alter_reservation_status	2024-08-04 18:04:45.892786+03
 99	wallet	0008_alter_transaction_transaction_type	2024-08-04 18:04:46.107977+03
+100	services	0027_delete_decorinorder	2024-08-15 13:04:58.666173+03
+101	services	0028_decorsinreservation_end_time	2024-08-15 13:07:51.403851+03
+102	services	0029_order_created_at_order_due_date	2024-08-15 15:34:57.38823+03
+103	services	0030_alter_order_status	2024-08-15 20:02:17.13149+03
 \.
 
 
@@ -639,6 +645,7 @@ COPY public.events_eventtype (id, name) FROM stdin;
 
 COPY public.events_event (id, name, start_time, end_time, total_cost, location_id, user_id, event_type_id) FROM stdin;
 3	ramez graduation party	2024-09-11 23:00:00+03	2024-09-12 01:00:00+03	0.00	12	6	\N
+4	graduation party	2024-08-20 15:00:00+03	2024-08-22 15:00:00+03	0.00	13	3	\N
 \.
 
 
@@ -680,8 +687,8 @@ COPY public.services_decorationservice (service_ptr_id, area_limit_km) FROM stdi
 --
 
 COPY public.services_decor (id, name, quantity, available_quantity, hourly_rate, description, decor_service_id, price) FROM stdin;
-7	White candles	1000	1000	0.00		9	10000.00
-6	ballons	10000	10000	0.00	they suit for birthday parties	9	200.00
+6	black roses	10000	10000	0.00	they suit for birthday parties	9	200.00
+7	red chair	1000	1000	10.00		9	5000.00
 \.
 
 
@@ -704,7 +711,7 @@ COPY public.photos_decorphotos (id, image, uploaded_at, decor_id) FROM stdin;
 
 COPY public.services_foodtype (id, type) FROM stdin;
 1	sea food
-2	chicken
+3	chicken
 \.
 
 
@@ -717,7 +724,7 @@ COPY public.services_food (id, name, price, food_type_id, ingredients) FROM stdi
 2	shawarma	35000	1	
 3	grilled fish	35000	1	
 4	fried salmon	50000	1	
-5	broasted	150000	2	
+7	broasted	200000	3	
 \.
 
 
@@ -816,22 +823,8 @@ COPY public.reports_reportservice (id, reason, evidence, resolution, is_solved, 
 COPY public.services_decoreventtype (id, event_type_id, decor_id) FROM stdin;
 5	2	6
 6	3	6
-\.
-
-
---
--- Data for Name: services_order; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.services_order (id, status, total_price, event_id, service_id) FROM stdin;
-\.
-
-
---
--- Data for Name: services_decorinorder; Type: TABLE DATA; Schema: public; Owner: postgres
---
-
-COPY public.services_decorinorder (id, quantity, price, decor_id, order_id) FROM stdin;
+7	2	7
+8	3	7
 \.
 
 
@@ -839,7 +832,9 @@ COPY public.services_decorinorder (id, quantity, price, decor_id, order_id) FROM
 -- Data for Name: services_decorsinreservation; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.services_decorsinreservation (id, quantity, start_time, price, decor_id, decors_reservation_id) FROM stdin;
+COPY public.services_decorsinreservation (id, quantity, start_time, price, decor_id, decors_reservation_id, end_time) FROM stdin;
+4	10	2024-08-20 15:00:00+03	480	7	16	2024-08-22 15:00:00+03
+5	10	2024-08-20 15:00:00+03	480	7	18	2024-08-22 15:00:00+03
 \.
 
 
@@ -848,9 +843,12 @@ COPY public.services_decorsinreservation (id, quantity, start_time, price, decor
 --
 
 COPY public.services_reservation (id, start_time, end_time, status, cost, event_id, created_at, updated_at) FROM stdin;
-6	2024-09-11 23:00:00+03	2024-09-12 00:00:00+03	Rejected	100000.00	3	2024-08-04 18:17:17.371489+03	2024-08-04 18:20:48.111378+03
-7	2024-09-11 23:00:00+03	2024-09-12 00:00:00+03	Rejected	100000.00	3	2024-08-04 18:40:40.843113+03	2024-08-04 18:47:05.419268+03
-8	2024-09-11 23:00:00+03	2024-09-12 00:00:00+03	Rejected	100000.00	3	2024-08-04 18:48:48.200074+03	2024-08-04 18:49:32.08743+03
+12	2024-08-20 15:00:00+03	2024-08-20 17:00:00+03	Cancelled	200000.00	4	2024-08-14 23:43:51.784061+03	2024-08-14 23:46:33.76714+03
+14	2024-08-20 15:00:00+03	2024-08-22 15:00:00+03	Pending	-480.00	4	2024-08-15 11:27:19.033904+03	2024-08-15 13:11:13.036616+03
+15	2024-08-20 15:00:00+03	2024-08-22 15:00:00+03	Pending	480.00	4	2024-08-15 13:12:44.652436+03	2024-08-15 13:12:44.663366+03
+16	2024-08-20 15:00:00+03	2024-08-22 15:00:00+03	Rejected	480.00	4	2024-08-15 13:20:34.885198+03	2024-08-15 13:33:44.914154+03
+17	2024-08-20 15:00:00+03	2024-08-20 17:00:00+03	Pending	200000.00	4	2024-08-15 13:43:48.168898+03	2024-08-15 13:43:48.168898+03
+18	2024-08-20 15:00:00+03	2024-08-22 15:00:00+03	Cancelled	480.00	4	2024-08-15 13:44:24.945964+03	2024-08-15 13:57:59.507007+03
 \.
 
 
@@ -859,6 +857,10 @@ COPY public.services_reservation (id, start_time, end_time, status, cost, event_
 --
 
 COPY public.services_decorsreservation (decor_service_id, reservation_ptr_id) FROM stdin;
+9	14
+9	15
+9	16
+9	18
 \.
 
 
@@ -888,10 +890,33 @@ COPY public.services_favoriteservice (id, user_id, service_id) FROM stdin;
 
 
 --
+-- Data for Name: services_order; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.services_order (id, status, total_price, event_id, service_id, created_at, due_date) FROM stdin;
+1	Pending	0	4	1	2024-08-15 15:34:56.431103+03	2024-08-20 15:00:00+03
+4	Pending	0	4	1	2024-08-15 18:03:12.198065+03	2024-08-20 15:00:00+03
+5	Pending	0	4	1	2024-08-15 18:03:37.039336+03	2024-08-20 15:00:00+03
+6	Pending	2000000	4	1	2024-08-15 18:07:39.111385+03	2024-08-20 15:00:00+03
+7	Pending	2000000	4	1	2024-08-15 18:19:19.640835+03	2024-08-20 15:00:00+03
+8	Pending	2000000	4	1	2024-08-15 18:47:58.695926+03	2024-08-20 18:00:00+03
+9	Pending	2000000	4	1	2024-08-15 18:50:27.180359+03	2024-08-20 18:00:00+03
+10	Rejected	2000000	4	1	2024-08-15 18:51:19.139599+03	2024-08-20 18:00:00+03
+11	Cancelled	2000000	4	1	2024-08-15 20:24:32.103785+03	2024-08-20 15:00:00+03
+\.
+
+
+--
 -- Data for Name: services_foodinorder; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.services_foodinorder (id, quantity, price, food_id, order_id) FROM stdin;
+1	10	2000000	7	6
+2	10	2000000	7	7
+3	10	2000000	7	8
+4	10	2000000	7	9
+5	10	2000000	7	10
+6	10	2000000	7	11
 \.
 
 
@@ -911,7 +936,7 @@ COPY public.services_foodservice (service_ptr_id, area_limit_km) FROM stdin;
 COPY public.services_foodservicefood (id, food_id, "foodService_id") FROM stdin;
 3	3	1
 4	4	1
-5	5	1
+7	7	1
 \.
 
 
@@ -921,7 +946,7 @@ COPY public.services_foodservicefood (id, food_id, "foodService_id") FROM stdin;
 
 COPY public.services_foodtypeservice (id, "foodService_id", "foodType_id") FROM stdin;
 2	1	1
-3	1	2
+5	1	3
 \.
 
 
@@ -950,9 +975,8 @@ COPY public.services_serviceproviderapplication (id, "otherType", national_ident
 --
 
 COPY public.services_servicereservation (service_id, reservation_ptr_id) FROM stdin;
-8	6
-8	7
-8	8
+8	12
+8	17
 \.
 
 
@@ -978,15 +1002,15 @@ COPY public.videos_video (id, file, uploaded_at, service_id) FROM stdin;
 --
 
 COPY public.wallet_wallet (id, balance, created_at, updated_at) FROM stdin;
-3	0.00	2024-07-31 16:25:19.425802+03	2024-07-31 16:25:24.371767+03
-4	0.00	2024-07-31 16:25:37.956423+03	2024-07-31 16:25:40.416368+03
-5	0.00	2024-07-31 16:25:50.369557+03	2024-07-31 16:25:56.329163+03
-2	3000000.00	2024-07-31 16:23:55.304341+03	2024-08-01 10:00:11.10194+03
+2	1050000.00	2024-07-31 16:23:55.304341+03	2024-08-15 23:27:56.008679+03
+1	208488.00	2024-07-31 16:14:58.113705+03	2024-08-15 23:27:56.024942+03
+6	0.00	2024-07-31 16:26:06.364674+03	2024-08-06 12:07:00.883477+03
 7	0.00	2024-08-02 18:53:56.307738+03	2024-08-02 18:53:56.325296+03
 8	0.00	2024-08-02 19:01:48.397047+03	2024-08-02 19:01:48.399001+03
 9	0.00	2024-08-03 20:55:38.053288+03	2024-08-03 20:55:38.08067+03
-1	0.00	2024-07-31 16:14:58.113705+03	2024-08-04 18:49:32.062157+03
-6	200000.00	2024-07-31 16:26:06.364674+03	2024-08-04 18:49:32.066152+03
+3	2300000.00	2024-07-31 16:25:19.425802+03	2024-08-15 23:27:56.02894+03
+4	300000.00	2024-07-31 16:25:37.956423+03	2024-08-14 23:46:33.694122+03
+5	500.00	2024-07-31 16:25:50.369557+03	2024-08-15 13:57:59.500013+03
 \.
 
 
@@ -1004,34 +1028,73 @@ COPY public.wallet_centerwallet (wallet_ptr_id) FROM stdin;
 --
 
 COPY public.wallet_transaction (id, amount, transaction_type, made_at, receiver_id, sender_id, wallet_id, fee, order_id, reservation_id) FROM stdin;
-1	5000000.00	credit	2024-08-01 09:51:26.816181+03	\N	\N	2	\N	\N	\N
-2	-2000000.00	debit	2024-08-01 10:00:11.103941+03	\N	\N	2	\N	\N	\N
-3	2000000.00	credit	2024-08-03 12:43:18.987136+03	\N	\N	6	\N	\N	\N
-4	-1900000.00	debit	2024-08-03 12:44:12.348694+03	\N	\N	6	\N	\N	\N
-5	100000.00	credit	2024-08-03 19:41:52.094697+03	\N	\N	6	\N	\N	\N
-13	-105000.00	debit	2024-08-03 20:51:26.313294+03	\N	\N	6	\N	\N	\N
-14	105000.00	credit	2024-08-03 20:51:26.324288+03	\N	\N	1	\N	\N	\N
-16	-105000.00	debit	2024-08-04 15:24:55.337663+03	\N	\N	1	\N	\N	\N
-17	105000.00	credit	2024-08-04 15:24:55.343659+03	\N	\N	6	\N	\N	\N
-15	-100000.00	transfer	2024-08-03 20:51:26.326286+03	1	6	6	5000.00	\N	\N
-18	-105000.00	debit	2024-08-04 18:17:17.384482+03	\N	\N	6	\N	\N	\N
-19	105000.00	credit	2024-08-04 18:17:17.389479+03	\N	\N	1	\N	\N	\N
-20	-100000.00	transfer	2024-08-04 18:17:17.390477+03	1	6	6	5000.00	\N	6
-21	-105000.00	debit	2024-08-04 18:20:48.027142+03	\N	\N	1	\N	\N	\N
-22	105000.00	credit	2024-08-04 18:20:48.03014+03	\N	\N	6	\N	\N	\N
-23	-105000.00	transfer	2024-08-04 18:20:48.031139+03	6	1	1	0.00	\N	6
-24	-105000.00	debit	2024-08-04 18:40:40.901077+03	\N	\N	6	\N	\N	\N
-25	105000.00	credit	2024-08-04 18:40:40.904075+03	\N	\N	1	\N	\N	\N
-26	-100000.00	transfer	2024-08-04 18:40:40.905075+03	1	6	6	5000.00	\N	7
-28	-105000.00	debit	2024-08-04 18:47:05.413271+03	\N	\N	1	\N	\N	7
-29	105000.00	credit	2024-08-04 18:47:05.41627+03	\N	\N	6	\N	\N	7
-30	-105000.00	transfer	2024-08-04 18:47:05.417268+03	6	1	1	0.00	\N	7
-31	-105000.00	debit	2024-08-04 18:48:48.211065+03	\N	\N	6	\N	\N	8
-32	105000.00	credit	2024-08-04 18:48:48.214063+03	\N	\N	1	\N	\N	8
-33	-105000.00	transfer	2024-08-04 18:48:48.214063+03	1	6	6	5000.00	\N	8
-34	-105000.00	debit	2024-08-04 18:49:32.064153+03	\N	\N	1	\N	\N	8
-35	105000.00	credit	2024-08-04 18:49:32.068154+03	\N	\N	6	\N	\N	8
-36	-105000.00	transfer	2024-08-04 18:49:32.06972+03	6	1	1	0.00	\N	8
+81	300000.00	credit	2024-08-14 23:42:27.237866+03	\N	\N	3	\N	\N	\N
+82	300000.00	credit	2024-08-14 23:43:25.273417+03	\N	\N	4	\N	\N	\N
+83	-210000.00	debit	2024-08-14 23:43:51.846486+03	\N	\N	3	\N	\N	12
+84	210000.00	credit	2024-08-14 23:43:51.851889+03	\N	\N	1	\N	\N	12
+85	-210000.00	transfer	2024-08-14 23:43:51.852886+03	1	3	3	10000.00	\N	12
+86	-105000.00	debit	2024-08-14 23:45:05.990913+03	\N	\N	4	\N	\N	12
+87	105000.00	credit	2024-08-14 23:45:05.993912+03	\N	\N	1	\N	\N	12
+88	-105000.00	transfer	2024-08-14 23:45:05.993912+03	1	4	4	5000.00	\N	12
+89	-105000.00	debit	2024-08-14 23:46:33.692123+03	\N	\N	1	\N	\N	12
+90	105000.00	credit	2024-08-14 23:46:33.69812+03	\N	\N	4	\N	\N	12
+91	-105000.00	transfer	2024-08-14 23:46:33.700118+03	4	1	1	0.00	\N	12
+92	-210000.00	debit	2024-08-14 23:46:33.761143+03	\N	\N	1	\N	\N	12
+93	210000.00	credit	2024-08-14 23:46:33.763142+03	\N	\N	3	\N	\N	12
+94	-210000.00	transfer	2024-08-14 23:46:33.764141+03	3	1	1	0.00	\N	12
+95	-504.00	debit	2024-08-15 13:20:35.12505+03	\N	\N	3	\N	\N	16
+96	504.00	credit	2024-08-15 13:20:35.131047+03	\N	\N	1	\N	\N	16
+97	-504.00	transfer	2024-08-15 13:20:35.132046+03	1	3	3	24.00	\N	16
+98	-504.00	debit	2024-08-15 13:33:44.89671+03	\N	\N	1	\N	\N	16
+99	504.00	credit	2024-08-15 13:33:44.906705+03	\N	\N	3	\N	\N	16
+100	-504.00	transfer	2024-08-15 13:33:44.908703+03	3	1	1	0.00	\N	16
+101	-210000.00	debit	2024-08-15 13:43:48.18189+03	\N	\N	3	\N	\N	17
+102	210000.00	credit	2024-08-15 13:43:48.186887+03	\N	\N	1	\N	\N	17
+103	-210000.00	transfer	2024-08-15 13:43:48.187886+03	1	3	3	10000.00	\N	17
+104	-504.00	debit	2024-08-15 13:44:24.963417+03	\N	\N	3	\N	\N	18
+105	504.00	credit	2024-08-15 13:44:24.966415+03	\N	\N	1	\N	\N	18
+106	-504.00	transfer	2024-08-15 13:44:24.967418+03	1	3	3	24.00	\N	18
+107	500.00	credit	2024-08-15 13:48:35.127426+03	\N	\N	5	\N	\N	\N
+108	-252.00	debit	2024-08-15 13:48:59.140866+03	\N	\N	5	\N	\N	18
+109	252.00	credit	2024-08-15 13:48:59.144296+03	\N	\N	1	\N	\N	18
+110	-252.00	transfer	2024-08-15 13:48:59.145295+03	1	5	5	12.00	\N	18
+111	-504.00	debit	2024-08-15 13:57:05.383344+03	\N	\N	1	\N	\N	18
+112	504.00	credit	2024-08-15 13:57:05.387341+03	\N	\N	3	\N	\N	18
+113	-504.00	transfer	2024-08-15 13:57:05.389339+03	3	1	1	0.00	\N	18
+114	-504.00	debit	2024-08-15 13:57:07.737245+03	\N	\N	1	\N	\N	18
+115	504.00	credit	2024-08-15 13:57:07.739243+03	\N	\N	3	\N	\N	18
+116	-504.00	transfer	2024-08-15 13:57:07.740242+03	3	1	1	0.00	\N	18
+117	-504.00	debit	2024-08-15 13:57:17.342057+03	\N	\N	1	\N	\N	18
+118	504.00	credit	2024-08-15 13:57:17.348054+03	\N	\N	3	\N	\N	18
+119	-504.00	transfer	2024-08-15 13:57:17.350053+03	3	1	1	0.00	\N	18
+120	-504.00	debit	2024-08-15 13:57:59.486021+03	\N	\N	1	\N	\N	18
+121	504.00	credit	2024-08-15 13:57:59.490019+03	\N	\N	3	\N	\N	18
+122	-504.00	transfer	2024-08-15 13:57:59.491017+03	3	1	1	0.00	\N	18
+123	-252.00	debit	2024-08-15 13:57:59.500013+03	\N	\N	1	\N	\N	18
+124	252.00	credit	2024-08-15 13:57:59.502012+03	\N	\N	5	\N	\N	18
+125	-252.00	transfer	2024-08-15 13:57:59.504011+03	5	1	1	0.00	\N	18
+126	200000.00	credit	2024-08-15 18:14:00.833792+03	\N	\N	3	\N	\N	\N
+127	8000.00	credit	2024-08-15 18:49:04.311527+03	\N	\N	3	\N	\N	\N
+128	488.00	credit	2024-08-15 18:50:10.073756+03	\N	\N	3	\N	\N	\N
+129	2000000.00	credit	2024-08-15 18:51:13.391321+03	\N	\N	3	\N	\N	\N
+130	-2100000.00	debit	2024-08-15 18:51:19.230377+03	\N	\N	3	\N	10	\N
+131	2100000.00	credit	2024-08-15 18:51:19.265856+03	\N	\N	1	\N	10	\N
+132	-2100000.00	transfer	2024-08-15 18:51:19.266855+03	1	3	3	100000.00	10	\N
+133	-2100000.00	debit	2024-08-15 20:11:57.912586+03	\N	\N	1	\N	10	\N
+134	2100000.00	credit	2024-08-15 20:11:57.947388+03	\N	\N	3	\N	10	\N
+135	-2100000.00	transfer	2024-08-15 20:11:57.948388+03	3	1	1	0.00	10	\N
+136	-2100000.00	debit	2024-08-15 20:24:32.430695+03	\N	\N	3	\N	11	\N
+137	2100000.00	credit	2024-08-15 20:24:32.437693+03	\N	\N	1	\N	11	\N
+138	-2100000.00	transfer	2024-08-15 20:24:32.439691+03	1	3	3	100000.00	11	\N
+139	-1050000.00	debit	2024-08-15 20:30:30.929688+03	\N	\N	2	\N	11	\N
+140	1050000.00	credit	2024-08-15 20:30:30.934687+03	\N	\N	1	\N	11	\N
+141	-1050000.00	transfer	2024-08-15 20:30:30.936016+03	1	2	2	50000.00	11	\N
+142	-1050000.00	debit	2024-08-15 23:27:55.922598+03	\N	\N	1	\N	11	\N
+143	1050000.00	credit	2024-08-15 23:27:56.010678+03	\N	\N	2	\N	11	\N
+144	-1050000.00	transfer	2024-08-15 23:27:56.011674+03	2	1	1	0.00	11	\N
+145	-2100000.00	debit	2024-08-15 23:27:56.027942+03	\N	\N	1	\N	11	\N
+146	2100000.00	credit	2024-08-15 23:27:56.03194+03	\N	\N	3	\N	11	\N
+147	-2100000.00	transfer	2024-08-15 23:27:56.032939+03	3	1	1	0.00	11	\N
 \.
 
 
@@ -1040,14 +1103,14 @@ COPY public.wallet_transaction (id, amount, transaction_type, made_at, receiver_
 --
 
 COPY public.wallet_userwallet (wallet_ptr_id, user_id) FROM stdin;
-2	2
-3	3
-4	4
 5	5
 7	7
 8	8
 9	10
+2	2
+3	3
 6	6
+4	4
 \.
 
 
@@ -1132,14 +1195,14 @@ SELECT pg_catalog.setval('public.django_content_type_id_seq', 58, true);
 -- Name: django_migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.django_migrations_id_seq', 99, true);
+SELECT pg_catalog.setval('public.django_migrations_id_seq', 103, true);
 
 
 --
 -- Name: events_event_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.events_event_id_seq', 3, true);
+SELECT pg_catalog.setval('public.events_event_id_seq', 4, true);
 
 
 --
@@ -1160,14 +1223,14 @@ SELECT pg_catalog.setval('public.events_invitationcard_id_seq', 1, false);
 -- Name: locations_address_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.locations_address_id_seq', 12, true);
+SELECT pg_catalog.setval('public.locations_address_id_seq', 13, true);
 
 
 --
 -- Name: locations_location_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.locations_location_id_seq', 12, true);
+SELECT pg_catalog.setval('public.locations_location_id_seq', 13, true);
 
 
 --
@@ -1258,21 +1321,14 @@ SELECT pg_catalog.setval('public.services_decor_id_seq', 8, true);
 -- Name: services_decoretype_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_decoretype_id_seq', 6, true);
-
-
---
--- Name: services_decorinorder_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('public.services_decorinorder_id_seq', 1, false);
+SELECT pg_catalog.setval('public.services_decoretype_id_seq', 8, true);
 
 
 --
 -- Name: services_decorsinreservation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_decorsinreservation_id_seq', 1, false);
+SELECT pg_catalog.setval('public.services_decorsinreservation_id_seq', 5, true);
 
 
 --
@@ -1286,49 +1342,49 @@ SELECT pg_catalog.setval('public.services_favoriteservice_id_seq', 1, false);
 -- Name: services_food_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_food_id_seq', 5, true);
+SELECT pg_catalog.setval('public.services_food_id_seq', 7, true);
 
 
 --
 -- Name: services_foodinorder_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_foodinorder_id_seq', 1, false);
+SELECT pg_catalog.setval('public.services_foodinorder_id_seq', 6, true);
 
 
 --
 -- Name: services_foodservicefood_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_foodservicefood_id_seq', 5, true);
+SELECT pg_catalog.setval('public.services_foodservicefood_id_seq', 7, true);
 
 
 --
 -- Name: services_foodtype_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_foodtype_id_seq', 2, true);
+SELECT pg_catalog.setval('public.services_foodtype_id_seq', 3, true);
 
 
 --
 -- Name: services_foodtypeservice_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_foodtypeservice_id_seq', 3, true);
+SELECT pg_catalog.setval('public.services_foodtypeservice_id_seq', 5, true);
 
 
 --
 -- Name: services_order_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_order_id_seq', 1, false);
+SELECT pg_catalog.setval('public.services_order_id_seq', 11, true);
 
 
 --
 -- Name: services_reservation_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.services_reservation_id_seq', 8, true);
+SELECT pg_catalog.setval('public.services_reservation_id_seq', 18, true);
 
 
 --
@@ -1363,7 +1419,7 @@ SELECT pg_catalog.setval('public.videos_video_id_seq', 1, true);
 -- Name: wallet_transaction_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.wallet_transaction_id_seq', 36, true);
+SELECT pg_catalog.setval('public.wallet_transaction_id_seq', 147, true);
 
 
 --
