@@ -9,11 +9,16 @@ class EventTypeSerializer(serializers.ModelSerializer):
 
 class EventSerializer(serializers.ModelSerializer):
     location = LocationSerializer(read_only = True)
-    event_type=EventTypeSerializer()
+    event_type = serializers.PrimaryKeyRelatedField(queryset=EventType.objects.all())
+    event_type_details = serializers.SerializerMethodField()
     class Meta:
         model = Event
-        fields = ['id', 'user', 'total_cost', 'location','name', 'start_time', 'end_time', 'event_type']
-        read_only_fields = ['id', 'total_cost', 'location', 'user']
+        fields = ['id', 'user', 'total_cost', 'location','name', 'start_time', 'end_time', 'event_type','event_type_details']
+        read_only_fields = ['id', 'total_cost', 'location', 'user','event_type_details']
+    
+    def get_event_type_details(self, obj):
+        # This method returns the serialized event_type when reading
+        return EventTypeSerializer(obj.event_type).data
 
 class InvitationCardDesignSerializer(serializers.ModelSerializer):
     class Meta:
