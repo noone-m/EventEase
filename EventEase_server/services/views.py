@@ -584,7 +584,6 @@ class DecorAPIView(APIView):
                         name = decorSerializer.validated_data['name'],
                         quantity  = decorSerializer.validated_data['quantity'],
                         hourly_rate = decorSerializer.validated_data.get('hourly_rate',0.00),
-                        price = decorSerializer.validated_data.get('price',0.00),
                         description = decorSerializer.validated_data.get('description',''),
                 )
                 decor_event_types = ast.literal_eval(decor_event_types_list_serializer.validated_data.get('decor_event_types')[0])
