@@ -3,6 +3,7 @@ import requests
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from locations.models import Address, Location
 from locations.utils import get_location_from_osm
@@ -105,7 +106,12 @@ class InvitationCardDesignListCreateAPIView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
+    def get_permissions(self):
+        if self.request.method in ['POST']:
+            return [IsAdminUser()]
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        
 class InvitationCardDesignDetailAPIView(APIView):
     def get(self, request, pk):
         design = get_object_or_404(InvitationCardDesign, pk=pk)
@@ -125,7 +131,11 @@ class InvitationCardDesignDetailAPIView(APIView):
         design.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
-
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'DELETE']:
+            return [IsAdminUser()]
+        if self.request.method == 'GET':
+            return [AllowAny()]
 
 class InvitationCardListCreateAPIView(APIView):
     def get(self, request):
@@ -139,6 +149,10 @@ class InvitationCardListCreateAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+
     
 
 class InvitationCardDetailAPIView(APIView):
@@ -159,3 +173,6 @@ class InvitationCardDetailAPIView(APIView):
         card = get_object_or_404(InvitationCard, pk=pk)
         card.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]

@@ -11,7 +11,7 @@ urlpatterns = [
     path('<int:event_id>/',EventAPIView.as_view()),
     path('invitation-card-designs/', InvitationCardDesignListCreateAPIView.as_view(), name='invitation_card_design_list_create'),
     path('invitation-card-designs/<int:pk>/', InvitationCardDesignDetailAPIView.as_view(), name='invitation_card_design_detail'),
-    path('invitation_cards/', InvitationCardListCreateAPIView.as_view(), name='invitation_card_list_create'),
-    path('invitation_cards/<int:pk>/', InvitationCardDetailAPIView.as_view(), name='invitation_card_detail'),
+    path('invitation-cards/', InvitationCardListCreateAPIView.as_view(), name='invitation_card_list_create'),
+    path('invitation-cards/<int:pk>/', InvitationCardDetailAPIView.as_view(), name='invitation_card_detail'),
     path('', include(router.urls)),
 ]
