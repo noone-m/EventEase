@@ -153,7 +153,7 @@ class DecorSerializer(serializers.ModelSerializer):
     decor_event_types = serializers.SerializerMethodField()
     class Meta:
         model = Decor
-        fields = ['id','decor_service', 'name', 'quantity', 'hourly_rate', 'available_quantity', 'price', 'description','decor_event_types']
+        fields = ['id','decor_service', 'name', 'quantity', 'hourly_rate', 'available_quantity', 'description','decor_event_types']
         read_only_fields = ['id','available_quantity','decor_service']
 
     def get_decor_event_types(self, obj):
